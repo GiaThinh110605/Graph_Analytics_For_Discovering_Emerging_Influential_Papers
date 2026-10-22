@@ -577,8 +577,8 @@
 
       <div class="hero-stats">
         <div class="stat-pill">
-          <div class="stat-num">OpenAlex</div>
-          <div class="stat-desc">Dataset chính (CS/AI/NLP)</div>
+          <div class="stat-num">ogbn-mag</div>
+          <div class="stat-desc">Dataset chính (736K CS/AI)</div>
         </div>
         <div class="stat-pill">
           <div class="stat-num">469K+</div>
@@ -634,8 +634,8 @@
             <td><span class="tag tag-purple">XGBoost</span> — Mở rộng tùy chọn (Optional Enhancement)</td>
           </tr>
           <tr>
-            <td><strong>Dataset chính & Benchmark</strong></td>
-            <td><strong>Chính:</strong> OpenAlex (Snapshot lọc theo CS/AI) | <strong>Benchmark:</strong> American Physical Society (APS) dataset (1893–2010)</td>
+            <td><strong>Dataset chính đang sử dụng</strong></td>
+            <td><strong style="color: var(--accent-emerald);">ogbn-mag</strong> (Stanford Open Graph Benchmark / Microsoft Academic Graph — 736,389 bài báo CS/AI &amp; 5,416,271 liên kết trích dẫn)</td>
           </tr>
         </tbody>
       </table>
@@ -1232,7 +1232,7 @@
     <!-- 5. DATASETS STRATEGY, EDA & ETL PROCESSING -->
     <section class="section-wrap" id="datasets">
       <div class="section-title"><i class="fa-solid fa-database"></i> 5. Chiến Lược Dataset, Khảo Sát Dữ Liệu (EDA) &amp; Chuẩn Hóa ETL</div>
-      <div class="section-subtitle">Tìm hiểu đặc tính phân phối Heavy-tail/Power-law, cấu trúc OpenAlex, Benchmark APS và Data Quality Checks</div>
+      <div class="section-subtitle">Tìm hiểu đặc tính phân phối Heavy-tail/Power-law, cấu trúc ogbn-mag (Stanford OGB) và Data Quality Checks</div>
 
       <!-- Khối Bổ Sung: Phân Tích & Tìm Hiểu Dữ Liệu (EDA & Data Exploration) -->
       <div class="card" style="border-left: 4px solid var(--accent-cyan); margin-bottom: 2rem;">
@@ -1356,14 +1356,14 @@
             <span class="tag tag-emerald">Official Verified Links</span>
           </div>
 
-          <!-- OGBN-MAG Dataset Links (Bộ Dữ Liệu Chính Đang Chạy) -->
+          <!-- OGBN-MAG Dataset Links (Bộ Dữ Liệu Chính Duy Nhất Đang Chạy) -->
           <div style="background: rgba(10, 16, 30, 0.7); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 1.15rem; margin-bottom: 1.25rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <strong style="color: #fff; font-size: 0.95rem;"><i class="fa-solid fa-diagram-project" style="color: var(--accent-emerald);"></i> 1. OGBN-MAG (Stanford SNAP Benchmark - Bộ Thực Nghiệm Chính)</strong>
-              <span class="tag tag-emerald">Đang Sử Dụng</span>
+              <strong style="color: #fff; font-size: 0.95rem;"><i class="fa-solid fa-diagram-project" style="color: var(--accent-emerald);"></i> 1. OGBN-MAG (Stanford SNAP Benchmark — Bộ Thực Nghiệm Duy Nhất Đang Chạy)</strong>
+              <span class="tag tag-emerald">Dataset Chính Cốt Lõi</span>
             </div>
             <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 10px;">
-              Mạng đồ thị học thuật không đồng nhất (Heterogeneous Graph) trích xuất từ Microsoft Academic Graph bởi Đại học Stanford. Gồm <strong>736,389 bài báo</strong>, <strong>5,416,271 liên kết trích dẫn</strong>, 1.13M tác giả và chia mốc thời gian rõ ràng (Train &lt; 2018, Valid 2018, Test &ge; 2019).
+              Bộ dữ liệu đồ thị học thuật chuẩn từ Microsoft Academic Graph &amp; Stanford OGB. Gồm <strong>736,389 bài báo</strong>, <strong>5,416,271 liên kết trích dẫn</strong>, 1.13M tác giả và chia mốc thời gian rõ ràng (Train &le; 2016, Valid = 2017, Test = 2018; đo lường tương lai qua trích dẫn năm 2019).
             </p>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
               <a href="https://ogb.stanford.edu/docs/nodeprop/#ogbn-mag" target="_blank" class="paper-link" style="background: rgba(16, 185, 129, 0.15); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3);">
@@ -1374,37 +1374,37 @@
               </a>
             </div>
             <div style="font-size: 0.78rem; color: var(--text-dim);">
-              * <strong>Cấu trúc sử dụng:</strong> File <code>raw/relations/paper___cites___paper/edge.csv.gz</code> (mạng trích dẫn) và thư mục <code>split/time/</code> (phân chia mốc thời gian).
+              * <strong>Cấu trúc dữ liệu trong máy:</strong> Nằm tại <code>data/mag/</code> gồm quan hệ trích dẫn (<code>paper___cites___paper</code>), tác giả (<code>author___writes___paper</code>), chủ đề (<code>paper___has_topic___field_of_study</code>) và vector nhúng 128D (<code>node-feat.csv.gz</code>).
             </div>
           </div>
 
-          <!-- OpenAlex Dataset Links -->
+          <!-- OpenAlex API (Công cụ phụ trợ tra cứu Metadata cho RAG) -->
           <div style="background: rgba(10, 16, 30, 0.7); border: 1px solid rgba(6, 182, 212, 0.3); border-radius: 12px; padding: 1.15rem; margin-bottom: 1.25rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <strong style="color: #fff; font-size: 0.95rem;"><i class="fa-solid fa-database" style="color: var(--accent-cyan);"></i> 2. OpenAlex (Nguồn Mở Rộng Toàn Cầu)</strong>
-              <span class="tag tag-cyan">CC0 Open Data</span>
+              <strong style="color: #fff; font-size: 0.95rem;"><i class="fa-solid fa-cloud-arrow-down" style="color: var(--accent-cyan);"></i> 2. OpenAlex REST API (Công Cụ Phụ Trợ Tra Cứu Title/Abstract Cho RAG)</strong>
+              <span class="tag tag-cyan">API Phụ Trợ (Optional)</span>
             </div>
             <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 10px;">
-              Kho dữ liệu học thuật mở thay thế MAG, lưu trữ hơn 250 triệu công trình khoa học toàn cầu kèm API REST và snapshot AWS S3.
+              Kho dữ liệu học thuật mở thay thế MAG. Đề tài <em>không tải full snapshot ~770 GB</em>, mà chỉ sử dụng <strong>REST API miễn phí</strong> để tra cứu Title và Abstract theo MAG ID cho Top Emerging Papers khi cần hiển thị trên UI Dashboard hoặc làm ngữ cảnh RAG.
             </p>
             <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
               <a href="https://openalex.org/" target="_blank" class="paper-link" style="background: rgba(6, 182, 212, 0.15); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(6, 182, 212, 0.3);">
                 <i class="fa-solid fa-globe"></i> Website: openalex.org
               </a>
-              <a href="https://docs.openalex.org/download-all-data/openalex-snapshot" target="_blank" class="paper-link" style="background: rgba(6, 182, 212, 0.15); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(6, 182, 212, 0.3);">
-                <i class="fa-solid fa-cloud-arrow-down"></i> Tải Full Snapshot (AWS S3)
+              <a href="https://api.openalex.org/works/mag:24982" target="_blank" class="paper-link" style="background: rgba(6, 182, 212, 0.15); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(6, 182, 212, 0.3);">
+                <i class="fa-solid fa-terminal"></i> Demo Query qua MAG ID
               </a>
-              <a href="https://doi.org/10.48550/arXiv.2205.01833" target="_blank" class="paper-link" style="background: rgba(6, 182, 212, 0.15); padding: 5px 10px; border-radius: 6px; border: 1px solid rgba(6, 182, 212, 0.3);">
-                <i class="fa-solid fa-file-pdf"></i> Paper: arXiv:2205.01833
-              </a>
+            </div>
+            <div style="font-size: 0.78rem; color: var(--text-dim); margin-top: 6px;">
+              * <strong>Mục đích duy nhất:</strong> Lấy chuỗi văn bản Tiêu đề &amp; Tóm tắt cho các bài báo số liệu trong <code>citation_lens.db</code> để Ollama có nội dung giải thích.
             </div>
           </div>
 
           <!-- APS Dataset Links -->
           <div style="background: rgba(10, 16, 30, 0.7); border: 1px solid rgba(168, 85, 247, 0.3); border-radius: 12px; padding: 1.15rem; margin-bottom: 1rem;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-              <strong style="color: #fff; font-size: 0.95rem;"><i class="fa-solid fa-atom" style="color: var(--accent-purple);"></i> 2. APS Data Sets (Benchmark Dataset)</strong>
-              <span class="tag tag-purple">American Physical Society</span>
+              <strong style="color: #fff; font-size: 0.95rem;"><i class="fa-solid fa-atom" style="color: var(--accent-purple);"></i> 3. APS Data Sets (Tài Liệu Tham Khảo Benchmark)</strong>
+              <span class="tag tag-purple">Benchmark Literature</span>
             </div>
             <p style="font-size: 0.83rem; color: var(--text-muted); margin-bottom: 10px;">
               Tập dữ liệu chuẩn đối sánh (Benchmark) được sử dụng trong các nghiên cứu khoa học lớn như STRank (Chaos 2025) và Aging Effect (2021).
@@ -1899,8 +1899,8 @@
         <div class="pipeline-wrapper">
           <div class="pipeline-step">
             <div class="pipeline-icon"><i class="fa-solid fa-cloud-arrow-down"></i></div>
-            <div class="pipeline-title">OpenAlex / APS</div>
-            <div class="pipeline-desc">Scientific Data Source</div>
+            <div class="pipeline-title">ogbn-mag</div>
+            <div class="pipeline-desc">Stanford OGB Dataset</div>
           </div>
           <div class="pipeline-arrow"><i class="fa-solid fa-chevron-right"></i></div>
 
@@ -1929,6 +1929,13 @@
             <div class="pipeline-icon"><i class="fa-solid fa-database"></i></div>
             <div class="pipeline-title">SQLite / DB</div>
             <div class="pipeline-desc">citation_lens.db (Load)</div>
+          </div>
+          <div class="pipeline-arrow"><i class="fa-solid fa-chevron-right"></i></div>
+
+          <div class="pipeline-step">
+            <div class="pipeline-icon"><i class="fa-solid fa-brain"></i></div>
+            <div class="pipeline-title">RecSys &amp; Ollama RAG</div>
+            <div class="pipeline-desc">Local Graph-Aware AI</div>
           </div>
           <div class="pipeline-arrow"><i class="fa-solid fa-chevron-right"></i></div>
 
@@ -2016,6 +2023,72 @@
         </div>
       </div>
 
+      <!-- 8.2. RECOMMENDATION ENGINE & OLLAMA LOCAL RAG -->
+      <div class="card" style="border-top: 4px solid var(--accent-emerald); margin-bottom: 1.5rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; flex-wrap: wrap; gap: 8px;">
+          <h3 style="font-size: 1.15rem; color: #fff;">
+            <i class="fa-solid fa-brain" style="color: var(--accent-emerald); margin-right: 8px;"></i>
+            8.2. Hệ Thống Khuyến Nghị Học Thuật Kết Hợp Local RAG (Ollama Graph-Aware AI)
+          </h3>
+          <div style="display: flex; gap: 6px;">
+            <span class="tag tag-emerald">100% Local / Offline</span>
+            <span class="tag tag-cyan">Ollama Qwen3.5 &amp; LLaMA-3.2</span>
+          </div>
+        </div>
+
+        <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 1rem;">
+          Kết hợp sức mạnh giữa <strong>Toán học Đồ thị (Graph Analytics)</strong> và <strong>Mô hình Ngôn ngữ Lớn cục bộ (Local LLM via Ollama)</strong> để giải quyết bài toán: Không chỉ tìm kiếm văn bản đơn thuần, mà đề xuất các công trình <em>đang bùng nổ ảnh hưởng khoa học (Emerging Stars)</em> kèm lời giải thích minh bạch (Explainable Recommendation).
+        </p>
+
+        <!-- Sơ đồ 3 tầng RecSys & RAG -->
+        <div class="grid-3" style="margin-bottom: 1.25rem;">
+          <div style="padding: 12px; background: rgba(10, 16, 30, 0.7); border-radius: 10px; border: 1px solid rgba(16, 185, 129, 0.2);">
+            <div style="font-weight: 700; color: var(--accent-emerald); font-size: 0.9rem; margin-bottom: 6px;">
+              <i class="fa-solid fa-magnifying-glass"></i> Tầng 1: Dense Retrieval
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+              Người dùng đặt câu hỏi tự do &rarr; Model <code>qwen3-embedding:0.6b</code> nhúng câu hỏi &rarr; Quét Vector DB (ChromaDB/FAISS) lọc Top-50 bài báo đồng nhất ngữ nghĩa.
+            </div>
+          </div>
+
+          <div style="padding: 12px; background: rgba(10, 16, 30, 0.7); border-radius: 10px; border: 1px solid rgba(6, 182, 212, 0.2);">
+            <div style="font-weight: 700; color: var(--accent-cyan); font-size: 0.9rem; margin-bottom: 6px;">
+              <i class="fa-solid fa-filter"></i> Tầng 2: Graph Reranking
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+              Truy vấn SQLite <code>citation_lens.db</code> để tái xếp hạng theo công thức: <code>Score = w1·Sim + w2·PageRank + w3·Velocity + w4·Label(Emerging)</code> &rarr; Chọn lọc Top-3 bài tiềm năng nhất.
+            </div>
+          </div>
+
+          <div style="padding: 12px; background: rgba(10, 16, 30, 0.7); border-radius: 10px; border: 1px solid rgba(168, 85, 247, 0.2);">
+            <div style="font-weight: 700; color: var(--accent-purple); font-size: 0.9rem; margin-bottom: 6px;">
+              <i class="fa-solid fa-robot"></i> Tầng 3: Ollama Generation
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.5;">
+              Đóng gói Context đồ thị vào Prompt &rarr; LLM <code>qwen3.5:4b</code> / <code>llama3.2:1b</code> sinh phản hồi phân tích lý do khuyến nghị, xu hướng và hướng đọc chuyên sâu.
+            </div>
+          </div>
+        </div>
+
+        <!-- UI Chat Assistant Simulation Preview -->
+        <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px;">
+          <div style="font-weight: 700; color: #fff; font-size: 0.88rem; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-comments" style="color: var(--accent-cyan);"></i> CitationLens RAG Assistant UI Preview
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 8px; font-size: 0.82rem;">
+            <div style="align-self: flex-end; background: rgba(6, 182, 212, 0.2); border: 1px solid rgba(6, 182, 212, 0.4); padding: 8px 12px; border-radius: 10px 10px 2px 10px; color: #fff; max-width: 80%;">
+              Gợi ý cho tôi các bài báo GNN mới xuất bản có tiềm năng bùng nổ trích dẫn trong tương lai?
+            </div>
+            <div style="align-self: flex-start; background: rgba(30, 41, 59, 0.8); border: 1px solid rgba(255,255,255,0.06); padding: 10px 14px; border-radius: 10px 10px 10px 2px; color: #cbd5e1; max-width: 90%; line-height: 1.6;">
+              <strong style="color: var(--accent-emerald);"><i class="fa-solid fa-sparkles"></i> CitationLens AI (Ollama Local):</strong><br>
+              Dựa trên phân tích 5.4M cạnh trích dẫn và mô hình dự báo tăng trưởng, tôi đề xuất 2 công trình đáng chú ý nhất:<br>
+              • <strong>Paper ID #9940</strong> (Velocity: <em>85 trích dẫn/năm</em>, PageRank: <em>0.0085</em>) &rarr; <span class="tag tag-rose" style="font-size: 0.7rem; padding: 2px 6px;">Top 5% Emerging Star</span>: Đang ở trung tâm chuyển dịch sang GNN động.<br>
+              • <strong>Paper ID #1042</strong> (Tăng trưởng tương lai <em>delta_c = +124</em>) &rarr; Đóng vai trò cầu nối tri thức liên ngành.
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- Backend REST API & Database Schema -->
       <div class="grid-2">
         <div class="card" style="padding: 1.25rem;">
@@ -2026,17 +2099,20 @@ GET /papers/{paper_id}/evolution # Lịch sử trích dẫn qua các năm
 GET /papers/{paper_id}/citations # Danh sách citing & cited papers
 GET /papers/emerging             # Bảng xếp hạng Top Emerging papers
 GET /communities                 # Danh sách các cụm nghiên cứu (LPA)
+POST /recommend/emerging         # Gợi ý bài báo tiềm năng theo tiêu chí đồ thị
+POST /rag/chat                   # Chatbot RAG giải thích khuyến nghị qua Ollama
 POST /analyze                    # Khảo sát phân tích một paper mới
 POST /predict                    # Dự báo xác suất tương lai bằng ML/GNN</code></pre>
         </div>
 
         <div class="card" style="padding: 1.25rem;">
-          <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 8px;">PostgreSQL Relational Schema</h4>
-          <pre><code>• papers (paper_id, title, year, venue, field, doi)
-• citations (source_paper, target_paper)
+          <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 8px;">PostgreSQL / SQLite Database Schema</h4>
+          <pre><code>• papers (paper_id, pub_year, past_in_degree, pagerank_score,
+          citation_velocity, delta_c, label, temporal_split)
+• top_emerging_papers (paper_id, pagerank_score, delta_c, ...)
+• papers_text (paper_id, mag_id, title, abstract, doi)
+• citations (src, dst, src_year)
 • graph_metrics (paper_id, pagerank, indegree, betweenness)
-• temporal_metrics (paper_id, citation_growth, velocity, age)
-• communities (paper_id, community_id, community_name)
 • predictions (paper_id, model_name, prob_emerging, rank_score)</code></pre>
         </div>
       </div>
@@ -2142,7 +2218,7 @@ volumes:
             <span class="tag tag-cyan">100% Phải hoàn thành</span>
           </div>
           <div style="padding: 12px; background: rgba(10, 16, 30, 0.6); border-radius: 12px; border: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.8; margin-bottom: 1rem;">
-            OpenAlex Raw Data (CS/AI filter)<br>
+            ogbn-mag Raw Dataset (Stanford OGB CS/AI)<br>
             &nbsp;&nbsp;▼ Data Engineering &amp; Parquet Partitioning<br>
             &nbsp;&nbsp;&nbsp;&nbsp;▼ Spark / GraphFrames (PageRank, InDegree, Betweenness, LPA)<br>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ Temporal Analytics (Growth, Velocity, Paper Age)<br>
@@ -2165,11 +2241,11 @@ volumes:
             &nbsp;&nbsp;▼ Machine Learning: XGBoost / GNN (GraphSAGE)<br>
             &nbsp;&nbsp;&nbsp;&nbsp;▼ Future Influence Probability Prediction<br>
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ SHAP Feature Explainability<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ MLflow Model Registry Tracking<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ CI/CD Automated Cloud Deployment
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ Graph-Aware RecSys &amp; Local Ollama RAG (qwen3.5 / llama3.2)<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ MLflow Tracking &amp; CI/CD Automated Cloud Deployment
           </div>
           <div style="font-size: 0.85rem; color: var(--text-muted);">
-            Lưu ý: <em>MLflow không phải database lưu papers</em>, chỉ dùng quản lý model registry, parameters và metrics.
+            Bổ sung sản phẩm nghiên cứu: <strong>D17 — Graph-Augmented Recommendation Engine &amp; Ollama Local RAG Service</strong> (Hỏi đáp &amp; khuyến nghị bài báo tiềm năng 100% offline).
           </div>
         </div>
       </div>
