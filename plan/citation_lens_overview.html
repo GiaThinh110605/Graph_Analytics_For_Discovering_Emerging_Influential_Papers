@@ -2206,46 +2206,54 @@ volumes:
 
     <!-- 10. SCOPE, DELIVERABLES & RESEARCH CONTRIBUTIONS -->
     <section class="section-wrap" id="deliverables">
-      <div class="section-title"><i class="fa-solid fa-list-check"></i> 10. Phân Chia Phạm Vi (Scope), Sản Phẩm Bàn Giao &amp; Đóng Góp Đề Tài</div>
-      <div class="section-subtitle">Chốt phạm vi làm đồ án đạt điểm tối đa, danh mục sản phẩm bàn giao (D1–D16) và 3 đóng góp khoa học chính</div>
+      <div class="section-title"><i class="fa-solid fa-list-check"></i> 10. Phân Chia Phạm Vi (Scope), Sản Phẩm Bàn Giao &amp; Kế Hoạch Đề Tài</div>
+      <div class="section-subtitle">Điều chỉnh trọng tâm theo góp ý GVHD: 90% nỗ lực cho Xử lý dữ liệu, 4 Mô hình so sánh &amp; Đánh giá đa chiều; Tối giản hóa ứng dụng Demo</div>
+
+      <!-- Instructor Guidance Alert -->
+      <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 12px; padding: 1.25rem; margin-bottom: 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+          <i class="fa-solid fa-chalkboard-user" style="color: var(--accent-emerald); font-size: 1.2rem;"></i>
+          <strong style="color: var(--accent-emerald); font-size: 1.05rem;">Chỉ Đạo Trọng Tâm Từ Giảng Viên Hướng Dẫn:</strong>
+        </div>
+        <p style="font-size: 0.9rem; color: #e2e8f0; line-height: 1.7; font-style: italic;">
+          "Về đề tài cuối kỳ tập trung vào mô hình, xử lý dữ liệu, cố gắng làm với ít nhất 3 mô hình so sánh đánh giá đa chiều, chứ thầy không tập trung vào làm ứng dụng nha em, em có thể thiết kế ứng dụng ở mức đơn giản nhất và tập trung vào phần cốt lõi. Dữ liệu không có mới nhất em có thể dùng các năm trước cho huấn luyện và năm sau cho dự đoán (test) như em đề xuất."
+        </p>
+      </div>
 
       <!-- Scope Breakdown: Core vs Advanced -->
       <div class="grid-2">
         <!-- Core Scope -->
         <div class="card" style="border-top: 4px solid var(--accent-cyan);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 style="font-size: 1.1rem; color: #fff;"><i class="fa-solid fa-star" style="color: var(--accent-cyan); margin-right: 8px;"></i> 10.1. Core Scope (BẮT BUỘC ĐỂ ĐẠT ĐIỂM CAO)</h3>
-            <span class="tag tag-cyan">100% Phải hoàn thành</span>
+            <h3 style="font-size: 1.1rem; color: #fff;"><i class="fa-solid fa-star" style="color: var(--accent-cyan); margin-right: 8px;"></i> 10.1. Core Scope Mới (Trọng Tâm Nghiên Cứu &amp; Thực Nghiệm)</h3>
+            <span class="tag tag-cyan">100% Tập trung</span>
           </div>
           <div style="padding: 12px; background: rgba(10, 16, 30, 0.6); border-radius: 12px; border: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.8; margin-bottom: 1rem;">
-            ogbn-mag Raw Dataset (Stanford OGB CS/AI)<br>
-            &nbsp;&nbsp;▼ Data Engineering &amp; Parquet Partitioning<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;▼ Spark / GraphFrames (PageRank, InDegree, Betweenness, LPA)<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ Temporal Analytics (Growth, Velocity, Paper Age)<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ Baseline Comparison (Citation Count vs PageRank vs EIS)<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ Web Dashboard (FastAPI + React) + Docker Compose
+            1. Temporal Split: Train (&le;2016), Val (2017), Test (2018)<br>
+            &nbsp;&nbsp;▼ 2. Xử lý lệch lớp: Raw vs Class Weight vs RUS vs SMOTE<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;▼ 3. Đối đầu 4 Mô hình: Logistic vs Random Forest vs LightGBM vs LTR<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ 4. Đánh giá đa chiều: PR-AUC, ROC-AUC, F1, NDCG@10, SHAP<br>
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ 5. Streamlit Minimal Demo App (Tra cứu &amp; Xếp hạng bài báo)
           </div>
           <div style="font-size: 0.85rem; color: var(--text-muted);">
-            Tập trung hoàn thành chỉn chu các sản phẩm: <strong>D1, D2, D3, D4, D5, D6, D7, D8, D10, D11, D12, D13, D14</strong>.
+            Tập trung hoàn thành chỉn chu các sản phẩm: <strong>Mã nguồn Notebook huấn luyện, Bộ 10 biểu đồ trực quan, Bảng đối đầu đa chiều và Web Demo Streamlit</strong>.
           </div>
         </div>
 
-        <!-- Advanced Scope -->
+        <!-- Optional / Secondary Scope -->
         <div class="card" style="border-top: 4px solid var(--accent-purple);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 style="font-size: 1.1rem; color: #fff;"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-purple); margin-right: 8px;"></i> 10.2. Advanced Scope (ĐIỂM CỘNG NGHIÊN CỨU)</h3>
-            <span class="tag tag-purple">Bonus Points</span>
+            <h3 style="font-size: 1.1rem; color: #fff;"><i class="fa-solid fa-wand-magic-sparkles" style="color: var(--accent-purple); margin-right: 8px;"></i> 10.2. Optional Scope (Thành Phần Mở Rộng / Phụ Trợ)</h3>
+            <span class="tag tag-purple">Thứ yếu / Điểm cộng</span>
           </div>
           <div style="padding: 12px; background: rgba(10, 16, 30, 0.6); border-radius: 12px; border: 1px solid var(--border-color); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.8; margin-bottom: 1rem;">
-            EIS Formulation Refinement<br>
-            &nbsp;&nbsp;▼ Machine Learning: XGBoost / GNN (GraphSAGE)<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;▼ Future Influence Probability Prediction<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ SHAP Feature Explainability<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ Graph-Aware RecSys &amp; Local Ollama RAG (qwen3.5 / llama3.2)<br>
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;▼ MLflow Tracking &amp; CI/CD Automated Cloud Deployment
+            • Graph Neural Networks (GraphSAGE / GAT với PyTorch Geometric)<br>
+            • Học sâu biểu diễn vector ngữ nghĩa (Semantic Embedding 128d)<br>
+            • FastAPI REST Backend &amp; Docker Compose (tối giản, đóng gói demo)<br>
+            • RAG Local Assistant với Ollama (tùy chọn làm thêm nếu kịp thời gian)
           </div>
           <div style="font-size: 0.85rem; color: var(--text-muted);">
-            Bổ sung sản phẩm nghiên cứu: <strong>D17 — Graph-Augmented Recommendation Engine &amp; Ollama Local RAG Service</strong> (Hỏi đáp &amp; khuyến nghị bài báo tiềm năng 100% offline).
+            Các thành phần này chỉ thực hiện khi đã hoàn thiện trọn vẹn và đạt điểm số tối đa ở phần <strong>Core Scope</strong>.
           </div>
         </div>
       </div>
