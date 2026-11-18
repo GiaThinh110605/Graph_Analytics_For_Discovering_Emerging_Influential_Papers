@@ -1720,7 +1720,7 @@
         <div class="tab-nav">
           <button class="tab-btn active" onclick="switchSectionTab('tab-leak')"><i class="fa-solid fa-shield-halved"></i> 7.1. Gán Nhãn &amp; Chống Leakage</button>
           <button class="tab-btn" onclick="switchSectionTab('tab-xgb')"><i class="fa-solid fa-brain"></i> 7.2. Đề Xuất Mô Hình AI (ML / GNN)</button>
-          <button class="tab-btn" onclick="switchSectionTab('tab-compare')"><i class="fa-solid fa-code-compare"></i> 7.3. So Sánh 5 Phương Pháp</button>
+          <button class="tab-btn" onclick="switchSectionTab('tab-compare')"><i class="fa-solid fa-table-list"></i> 7.3. Đối Chuẩn 22 Mô Hình Spark MLlib &amp; Thực Nghiệm</button>
           <button class="tab-btn" onclick="switchSectionTab('tab-metrics')"><i class="fa-solid fa-bullseye"></i> 7.4. Metrics Đánh Giá Xếp Hạng</button>
         </div>
 
@@ -1838,25 +1838,241 @@
 
         <!-- Tab: Comparison -->
         <div id="tab-compare" class="tab-pane">
-          <h4 style="color: #fff; font-size: 1.1rem; margin-bottom: 10px;">So Sánh Thực Nghiệm Giữa 5 Phương Pháp</h4>
-          <table class="custom-table">
-            <thead>
-              <tr>
-                <th>Phương pháp</th>
-                <th>Structural</th>
-                <th>Temporal</th>
-                <th>Future Prediction</th>
-                <th>Phân loại phương pháp</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr><td><code>Citation Count</code></td><td>✅</td><td>❌</td><td>❌</td><td>Baseline truyền thống</td></tr>
-              <tr><td><code>PageRank</code></td><td>✅</td><td>❌</td><td>❌</td><td>Graph baseline</td></tr>
-              <tr><td><code>Citation Growth</code></td><td>❌</td><td>✅</td><td>❌</td><td>Temporal baseline</td></tr>
-              <tr><td><code>EIS (Baseline đề xuất)</code></td><td>✅</td><td>✅</td><td>❌</td><td>Heuristic baseline đa đặc trưng</td></tr>
-              <tr><td><code>XGBoost / GNN (Optional)</code></td><td>✅</td><td>✅</td><td>✅</td><td>Supervised AI Ranker</td></tr>
-            </tbody>
-          </table>
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <h4 style="color: #fff; font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: 8px;">
+              <i class="fa-solid fa-table-list" style="color: var(--accent-cyan);"></i> Bảng Đối Chuẩn Toàn Diện 22 Mô Hình Học Máy Phân Tán Trên Apache Spark MLlib
+            </h4>
+            <span class="tag tag-cyan">Dataset: OGBN-MAG (694,450 papers)</span>
+          </div>
+
+          <p style="font-size: 0.88rem; color: var(--text-muted); line-height: 1.7; margin-bottom: 14px;">
+            Được đánh giá nghiêm ngặt theo phân chia thời gian <strong>Temporal Split</strong> (Train &le; 2016: 559,373 dòng; Valid = 2017: 70,198 dòng; Test = 2018 đánh giá tăng trưởng &ge; 2019: 64,879 dòng) nhằm đảm bảo <strong>0% rò rỉ dữ liệu (No Data Leakage)</strong>. Dưới đây là kết quả của 22 mô hình học máy phân tán trên Spark qua 6 nhóm cấu hình thực nghiệm:
+          </p>
+
+          <div style="overflow-x: auto; margin-bottom: 1.5rem;">
+            <table class="custom-table" style="font-size: 0.85rem; width: 100%;">
+              <thead>
+                <tr>
+                  <th style="width: 22%;">Nhóm phương pháp</th>
+                  <th style="width: 28%;">Thuật toán học máy</th>
+                  <th style="text-align: center;">Valid PR-AUC</th>
+                  <th style="text-align: center;">Test PR-AUC</th>
+                  <th style="text-align: center;">Test ROC-AUC</th>
+                  <th style="text-align: center;">Test F1-Score</th>
+                </tr>
+              </thead>
+              <tbody>
+                <!-- Group 1: Dữ liệu gốc -->
+                <tr>
+                  <td rowspan="5" style="vertical-align: middle; font-weight: 700; background: rgba(255,255,255,0.02);"><span class="tag" style="background: rgba(148, 163, 184, 0.15); color: #cbd5e1;">Dữ liệu gốc</span></td>
+                  <td>Logistic Regression</td>
+                  <td style="text-align: center;">0.6507</td>
+                  <td style="text-align: center;">0.5194</td>
+                  <td style="text-align: center;">0.7765</td>
+                  <td style="text-align: center;">0.8361</td>
+                </tr>
+                <tr>
+                  <td>Linear SVC</td>
+                  <td style="text-align: center;">0.6643</td>
+                  <td style="text-align: center;">0.5467</td>
+                  <td style="text-align: center;">0.7903</td>
+                  <td style="text-align: center;">0.8361</td>
+                </tr>
+                <tr>
+                  <td>Decision Tree</td>
+                  <td style="text-align: center;">0.6188</td>
+                  <td style="text-align: center;">0.5595</td>
+                  <td style="text-align: center;">0.6196</td>
+                  <td style="text-align: center;">0.8626</td>
+                </tr>
+                <tr>
+                  <td>Random Forest</td>
+                  <td style="text-align: center;">0.6257</td>
+                  <td style="text-align: center;">0.5404</td>
+                  <td style="text-align: center;">0.7433</td>
+                  <td style="text-align: center;">0.8435</td>
+                </tr>
+                <tr>
+                  <td>GBT Classifier</td>
+                  <td style="text-align: center;">0.6496</td>
+                  <td style="text-align: center;">0.5271</td>
+                  <td style="text-align: center;">0.7854</td>
+                  <td style="text-align: center;">0.8626</td>
+                </tr>
+
+                <!-- Group 2: Random Oversampling -->
+                <tr style="border-top: 1px solid rgba(255,255,255,0.1);">
+                  <td rowspan="5" style="vertical-align: middle; font-weight: 700; background: rgba(255,255,255,0.02);"><span class="tag tag-amber">Random Oversampling</span></td>
+                  <td>Logistic Regression</td>
+                  <td style="text-align: center;">0.6507</td>
+                  <td style="text-align: center;">0.5194</td>
+                  <td style="text-align: center;">0.7765</td>
+                  <td style="text-align: center;">0.8559</td>
+                </tr>
+                <tr>
+                  <td>Linear SVC</td>
+                  <td style="text-align: center;">0.6506</td>
+                  <td style="text-align: center;">0.5194</td>
+                  <td style="text-align: center;">0.7765</td>
+                  <td style="text-align: center;">0.8749</td>
+                </tr>
+                <tr>
+                  <td>Decision Tree</td>
+                  <td style="text-align: center;">0.5389</td>
+                  <td style="text-align: center;">0.4991</td>
+                  <td style="text-align: center;">0.7428</td>
+                  <td style="text-align: center;">0.8567</td>
+                </tr>
+                <tr>
+                  <td>Random Forest</td>
+                  <td style="text-align: center;">0.5652</td>
+                  <td style="text-align: center;">0.5050</td>
+                  <td style="text-align: center;">0.7863</td>
+                  <td style="text-align: center;">0.8567</td>
+                </tr>
+                <tr>
+                  <td>GBT Classifier</td>
+                  <td style="text-align: center;">0.6590</td>
+                  <td style="text-align: center;">0.5288</td>
+                  <td style="text-align: center;">0.7868</td>
+                  <td style="text-align: center;">0.8560</td>
+                </tr>
+
+                <!-- Group 3: Random Undersampling -->
+                <tr style="border-top: 1px solid rgba(255,255,255,0.1);">
+                  <td rowspan="5" style="vertical-align: middle; font-weight: 700; background: rgba(255,255,255,0.02);"><span class="tag tag-rose">Random Undersampling</span></td>
+                  <td>Logistic Regression</td>
+                  <td style="text-align: center;">0.6507</td>
+                  <td style="text-align: center;">0.5194</td>
+                  <td style="text-align: center;">0.7765</td>
+                  <td style="text-align: center;">0.8559</td>
+                </tr>
+                <tr>
+                  <td>Linear SVC</td>
+                  <td style="text-align: center;">0.6506</td>
+                  <td style="text-align: center;">0.5194</td>
+                  <td style="text-align: center;">0.7765</td>
+                  <td style="text-align: center;">0.8749</td>
+                </tr>
+                <tr>
+                  <td>Decision Tree</td>
+                  <td style="text-align: center;">0.5390</td>
+                  <td style="text-align: center;">0.4991</td>
+                  <td style="text-align: center;">0.7428</td>
+                  <td style="text-align: center;">0.8560</td>
+                </tr>
+                <tr>
+                  <td>Random Forest</td>
+                  <td style="text-align: center;">0.5860</td>
+                  <td style="text-align: center;">0.5048</td>
+                  <td style="text-align: center;">0.7859</td>
+                  <td style="text-align: center;">0.8560</td>
+                </tr>
+                <tr>
+                  <td>GBT Classifier</td>
+                  <td style="text-align: center;">0.6557</td>
+                  <td style="text-align: center;">0.5208</td>
+                  <td style="text-align: center;">0.7849</td>
+                  <td style="text-align: center;">0.8252</td>
+                </tr>
+
+                <!-- Group 4: Class Weight -->
+                <tr style="border-top: 1px solid rgba(255,255,255,0.1);">
+                  <td rowspan="5" style="vertical-align: middle; font-weight: 700; background: rgba(6, 182, 212, 0.05);"><span class="tag tag-cyan">Class Weight (Đề xuất)</span></td>
+                  <td>Logistic Regression</td>
+                  <td style="text-align: center;">0.6507</td>
+                  <td style="text-align: center;">0.5194</td>
+                  <td style="text-align: center;">0.7765</td>
+                  <td style="text-align: center;">0.8559</td>
+                </tr>
+                <tr>
+                  <td>Linear SVC</td>
+                  <td style="text-align: center;">0.6506</td>
+                  <td style="text-align: center;">0.5194</td>
+                  <td style="text-align: center;">0.7765</td>
+                  <td style="text-align: center;">0.8749</td>
+                </tr>
+                <tr>
+                  <td>Decision Tree</td>
+                  <td style="text-align: center;">0.5396</td>
+                  <td style="text-align: center;">0.4902</td>
+                  <td style="text-align: center;">0.7820</td>
+                  <td style="text-align: center;">0.8560</td>
+                </tr>
+                <tr>
+                  <td>Random Forest</td>
+                  <td style="text-align: center;">0.5909</td>
+                  <td style="text-align: center;">0.5052</td>
+                  <td style="text-align: center;">0.7861</td>
+                  <td style="text-align: center;">0.8560</td>
+                </tr>
+                <tr style="background: rgba(6, 182, 212, 0.08);">
+                  <td><strong style="color: var(--accent-cyan);">GBT Classifier</strong></td>
+                  <td style="text-align: center; font-weight: 700; color: var(--accent-cyan);">0.6604</td>
+                  <td style="text-align: center; font-weight: 700; color: var(--accent-cyan);">0.5337</td>
+                  <td style="text-align: center;">0.7870</td>
+                  <td style="text-align: center;">0.8560</td>
+                </tr>
+
+                <!-- Group 5: Hyperparameter Tuning -->
+                <tr style="border-top: 1px solid rgba(255,255,255,0.1);">
+                  <td style="vertical-align: middle; font-weight: 700; background: rgba(168, 85, 247, 0.05);"><span class="tag tag-purple">Hyperparameter Tuning</span></td>
+                  <td>GBT + CW (maxDepth=4, maxIter=15)</td>
+                  <td style="text-align: center; font-weight: 700;">0.6618</td>
+                  <td style="text-align: center; font-weight: 700;">0.5385</td>
+                  <td style="text-align: center;">0.7868</td>
+                  <td style="text-align: center;">0.8560</td>
+                </tr>
+
+                <!-- Group 6: Stacking Ensemble -->
+                <tr style="border-top: 2px solid var(--accent-emerald); background: rgba(16, 185, 129, 0.1);">
+                  <td style="vertical-align: middle; font-weight: 700;"><span class="tag tag-emerald">Stacking Ensemble ★</span></td>
+                  <td><strong style="color: #6ee7b7;">Random Forest + GBT → Logistic Regression</strong></td>
+                  <td style="text-align: center; font-weight: 700; color: #6ee7b7;">0.6613</td>
+                  <td style="text-align: center; font-weight: 800; color: #6ee7b7;">0.5412 ★</td>
+                  <td style="text-align: center; font-weight: 800; color: #6ee7b7;">0.7888 ★</td>
+                  <td style="text-align: center; font-weight: 800; color: #6ee7b7;">0.8617 ★</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Deep-dive 3 boxes: Sàng lọc sơ bộ, Popularity Bias, Spark Speedup -->
+          <div class="grid-3" style="gap: 14px; margin-bottom: 1rem;">
+            <!-- Box 1: LazyClassifier Screening -->
+            <div style="background: rgba(10, 16, 30, 0.7); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 14px;">
+              <div style="font-weight: 700; color: var(--accent-cyan); font-size: 0.92rem; margin-bottom: 8px;">
+                <i class="fa-solid fa-filter"></i> Sàng Lọc Sơ Bộ (LazyClassifier)
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; margin: 0;">
+                Khảo sát thực nghiệm trên 30 thuật toán Scikit-Learn (trong <code>lazy_classifier.ipynb</code>) đóng vai trò bàn đạp thực nghiệm để chọn ra 5 kiến trúc tiêu biểu nhất đưa lên phân tán Apache Spark MLlib: Tuyến tính (Logistic Regression, Linear SVC), Cây đơn (Decision Tree) và Cây tổ hợp (Random Forest, GBT).
+              </p>
+            </div>
+
+            <!-- Box 2: Popularity Bias Benchmark -->
+            <div style="background: rgba(10, 16, 30, 0.7); border: 1px solid rgba(16, 185, 129, 0.25); border-radius: 12px; padding: 14px;">
+              <div style="font-weight: 700; color: var(--accent-emerald); font-size: 0.92rem; margin-bottom: 8px;">
+                <i class="fa-solid fa-scale-balanced"></i> Khắc Phục Popularity Bias
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; margin: 0;">
+                Đối đầu trực diện với công cụ tìm kiếm truyền thống (Google Scholar):<br>
+                • <strong>CitationLens:</strong> Tuổi TB <strong>1.5 năm</strong>, <strong>0.0%</strong> bài cũ, Precision@10 = <strong>100.0%</strong>.<br>
+                • <strong>Naive Baseline:</strong> Tuổi TB <strong>12.4 năm</strong>, <strong>80.0%</strong> bài cũ, Precision@10 = <strong>10.0%</strong>.
+              </p>
+            </div>
+
+            <!-- Box 3: Spark Distributed Speedup -->
+            <div style="background: rgba(10, 16, 30, 0.7); border: 1px solid rgba(168, 85, 247, 0.25); border-radius: 12px; padding: 14px;">
+              <div style="font-weight: 700; color: var(--accent-purple); font-size: 0.92rem; margin-bottom: 8px;">
+                <i class="fa-solid fa-gauge-high"></i> Tăng Tốc Phân Tán (Speedup 4.59x)
+              </div>
+              <p style="font-size: 0.8rem; color: var(--text-muted); line-height: 1.6; margin: 0;">
+                Khảo sát năng lực mở rộng (Scalability) của Apache Spark trên toàn bộ 694k bài báo:<br>
+                • 1 Core: <strong>134.8 giây</strong><br>
+                • 8 Cores: <strong>29.4 giây</strong> &rarr; <strong>Speedup = 4.59x</strong>, chứng minh năng lực xử lý vượt trội trên dữ liệu lớn.
+              </p>
+            </div>
+          </div>
         </div>
 
         <!-- Tab: Evaluation -->
@@ -1920,8 +2136,8 @@
 
           <div class="pipeline-step">
             <div class="pipeline-icon"><i class="fa-solid fa-chart-line"></i></div>
-            <div class="pipeline-title">EIS &amp; XGBoost</div>
-            <div class="pipeline-desc">Baseline &amp; ML Prediction</div>
+            <div class="pipeline-title">22 MLlib Models</div>
+            <div class="pipeline-desc">Stacking &amp; Class Weight</div>
           </div>
           <div class="pipeline-arrow"><i class="fa-solid fa-chevron-right"></i></div>
 
@@ -1934,8 +2150,8 @@
 
           <div class="pipeline-step">
             <div class="pipeline-icon"><i class="fa-solid fa-brain"></i></div>
-            <div class="pipeline-title">RecSys &amp; Ollama RAG</div>
-            <div class="pipeline-desc">Local Graph-Aware AI</div>
+            <div class="pipeline-title">Two-Stage Hybrid</div>
+            <div class="pipeline-desc">Candidate Filter &amp; Rerank</div>
           </div>
           <div class="pipeline-arrow"><i class="fa-solid fa-chevron-right"></i></div>
 
@@ -2093,16 +2309,11 @@
       <div class="grid-2">
         <div class="card" style="padding: 1.25rem;">
           <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 8px;">FastAPI REST API Endpoints</h4>
-          <pre><code>GET /papers/{paper_id}           # Thông tin metadata & metrics
-GET /papers/{paper_id}/metrics   # Điểm PR, Growth, Velocity, EIS
-GET /papers/{paper_id}/evolution # Lịch sử trích dẫn qua các năm
-GET /papers/{paper_id}/citations # Danh sách citing & cited papers
-GET /papers/emerging             # Bảng xếp hạng Top Emerging papers
-GET /communities                 # Danh sách các cụm nghiên cứu (LPA)
-POST /recommend/emerging         # Gợi ý bài báo tiềm năng theo tiêu chí đồ thị
-POST /rag/chat                   # Chatbot RAG giải thích khuyến nghị qua Ollama
-POST /analyze                    # Khảo sát phân tích một paper mới
-POST /predict                    # Dự báo xác suất tương lai bằng ML/GNN</code></pre>
+          <pre><code>GET /                              # Giao diện Web Dashboard trực quan
+GET /api/search?q={query}&limit=10 # Tìm kiếm bài báo khoa học theo từ khóa
+GET /api/recommend?paper_id={id}&top_k=5 # Gợi ý bài báo tiềm năng (Two-Stage Hybrid)
+GET /api/papers/{paper_id}         # Chi tiết bài báo, PageRank, Velocity, Delta_C
+GET /api/health                    # Kiểm tra trạng thái hoạt động hệ thống</code></pre>
         </div>
 
         <div class="card" style="padding: 1.25rem;">
@@ -2130,44 +2341,20 @@ POST /predict                    # Dự báo xác suất tương lai bằng ML/G
               <i class="fa-solid fa-cubes" style="color: #38bdf8;"></i> Cấu Trúc Docker Compose Multi-Container
             </h4>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
-              Hệ thống được đóng gói thành các microservices độc lập giúp chạy toàn bộ dự án chỉ bằng 1 lệnh duy nhất: <code>docker compose up -d</code>.
+              Toàn bộ hệ thống Web Dashboard &amp; Machine Learning Inference Engine được tối ưu hóa và đóng gói hoàn chỉnh trong Docker Container (Production Mode):
             </p>
-            <pre><code># docker-compose.yml
-version: '3.8'
-services:
-  # 1. Cơ sở dữ liệu quan hệ
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_DB: citation_lens
-      POSTGRES_USER: admin
-      POSTGRES_PASSWORD: secret_password
-    ports: ["5432:5432"]
-    volumes: [postgres_data:/var/lib/postgresql/data]
+            <pre><code># 1. Build Docker Image tối ưu hóa
+docker build -t graph-2:latest .
 
-  # 2. Backend REST API
-  backend:
-    build: ./backend
-    ports: ["8000:8000"]
-    environment:
-      DATABASE_URL: postgresql://admin:secret_password@postgres:5432/citation_lens
-    depends_on: [postgres]
+# 2. Chạy container ở chế độ nền (Map port 8000 host -> 80 container)
+docker run -d -p 8000:80 --name citation-lens-app graph-2:latest
 
-  # 3. Frontend Web Dashboard
-  frontend:
-    build: ./frontend
-    ports: ["3000:3000"]
-    depends_on: [backend]
+# 3. Truy cập ứng dụng trực tiếp tại trình duyệt
+http://localhost:8000/
 
-  # 4. Apache Spark Analytics Worker (Tùy chọn)
-  spark-worker:
-    image: bitnami/spark:3.4
-    environment:
-      - SPARK_MODE=master
-    volumes: [./data:/opt/spark/data]
-
-volumes:
-  postgres_data:</code></pre>
+# 4. Kiểm tra trạng thái container và log hoạt động
+docker ps
+docker logs -f citation-lens-app</code></pre>
           </div>
 
           <div>
