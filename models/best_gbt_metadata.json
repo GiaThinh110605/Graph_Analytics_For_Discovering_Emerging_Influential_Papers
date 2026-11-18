@@ -1,0 +1,34 @@
+{
+    "model_name": "Best_GBTClassifier_Tuned",
+    "framework": "PySpark MLlib",
+    "features": [
+        "citation_velocity",
+        "pagerank_score",
+        "paper_age"
+    ],
+    "feature_importances": {
+        "citation_velocity": 0.9631600087533126,
+        "pagerank_score": 0.02061325939168839,
+        "paper_age": 0.01622673185499887
+    },
+    "scaler": {
+        "type": "StandardScaler",
+        "withMean": false,
+        "withStd": true,
+        "std": [
+            3.355609307438098,
+            3.715887650086155,
+            1.9620617529524629
+        ]
+    },
+    "hyperparameters": {
+        "maxDepth": 4,
+        "maxIter": 15,
+        "stepSize": 0.1,
+        "weightCol": "class_weight"
+    },
+    "class_weights": {
+        "w0": 0.5273511815536964,
+        "w1": 9.640372949124501
+    }
+}

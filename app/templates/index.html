@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CitationLens - Two-Stage Hybrid Paper Recommender</title>
+    <!-- TailwindCSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Vis.js CDN for Network Graph -->
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        #network-graph {
+            height: 420px;
+            width: 100%;
+            background-color: #0b0f19;
+            border-radius: 0.5rem;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
+
+    <!-- Header Bar -->
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <span class="text-2xl">🔬</span>
+                <div>
+                    <h1 class="text-lg font-bold text-sky-400">CitationLens</h1>
+                    <p class="text-xs text-slate-400">Two-Stage Hybrid Scientific Paper Recommender</p>
+                </div>
+            </div>
+            <div class="flex items-center space-x-4 text-xs font-semibold">
+                <span class="px-2.5 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full flex items-center gap-1.5">
+                    <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+                    FastAPI Serving &bull; Latency &lt; 20ms
+                </span>
+                <span class="text-slate-400 border-l border-slate-700 pl-4 hidden md:inline">OGBN-MAG &bull; 694k Papers</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Controls (4 cols) -->
+        <section class="lg:col-span-4 space-y-5">
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
+                <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
+                    <span>🎯</span> Tìm Kiếm & Đầu Vào Bài Báo
+                </h2>
+
+                <!-- 1. Ô TÌM KIẾM BẰNG TÊN BÀI BÁO (Title Search Autocomplete) -->
+                <div class="relative">
+                    <label class="block text-xs font-semibold text-slate-300 mb-1">🔍 Tìm kiếm theo Tên bài báo:</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="title-search-input" placeholder="Nhập tên: ví dụ 'gravitational waves', 'dark matter', 'gaia'..." class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-sky-500">
+                        <button id="title-search-btn" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs text-sky-400 font-semibold rounded-lg">
+                            Tìm
+                        </button>
+                    </div>
+
+                    <!-- Dropdown danh sách gợi ý khi gõ tên -->
+                    <div id="search-suggestions" class="hidden absolute left-0 right-0 top-full mt-1 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-50 max-h-56 overflow-y-auto divide-y divide-slate-800">
+                        <!-- Suggestions injected here -->
+                    </div>
+                </div>
+
+                <!-- 2. Hoặc nhập trực tiếp Paper ID -->
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 mb-1">Hoặc nhập Paper ID đã biết:</label>
+                    <input type="number" id="paper-id-input" value="472963" placeholder="Ví dụ: 472963, 664028, 100..." class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-sky-400 font-mono focus:outline-none focus:border-sky-500">
+                </div>
+
+                <!-- 3. Alpha Slider -->
+                <div>
+                    <div class="flex justify-between text-xs text-slate-400 mb-1">
+                        <span>Trọng số lai ghép (&alpha;):</span>
+                        <span id="alpha-val" class="font-bold text-indigo-400">0.40</span>
+                    </div>
+                    <input type="range" id="alpha-slider" min="0" max="1" step="0.05" value="0.4" class="w-full accent-indigo-500 cursor-pointer">
+                    <div class="flex justify-between text-[10px] text-slate-500 mt-0.5">
+                        <span>0.0 (Bùng nổ ML)</span>
+                        <span>1.0 (Liên quan)</span>
+                    </div>
+                </div>
+
+                <!-- 4. Top-K Slider -->
+                <div>
+                    <div class="flex justify-between text-xs text-slate-400 mb-1">
+                        <span>Số lượng gợi ý (Top-K):</span>
+                        <span id="topk-val" class="font-bold text-emerald-400">10</span>
+                    </div>
+                    <input type="range" id="topk-slider" min="5" max="25" step="1" value="10" class="w-full accent-emerald-500 cursor-pointer">
+                </div>
+
+                <!-- Action Button -->
+                <button id="search-btn" class="w-full py-2.5 px-4 bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white font-semibold rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
+                    <span>⚡</span> Khám Phá Bài Báo Tiềm Năng
+                </button>
+            </div>
+
+            <!-- Seed Info Card -->
+            <div id="seed-card" class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg space-y-2">
+                <h3 class="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
+                    <span>📌</span> Bài Báo Đang Chọn (Seed Paper)
+                </h3>
+                <div class="text-xs space-y-1.5 text-slate-300">
+                    <p class="font-bold text-white text-sm leading-snug" id="seed-title">Đang nạp...</p>
+                    <p class="text-slate-400">Paper ID: <span id="seed-id" class="font-mono font-bold text-sky-400">#472963</span> &bull; Năm XB: <span id="seed-year" class="font-semibold text-white">2016</span></p>
+                    <p>PageRank Score: <span id="seed-pr" class="font-mono text-emerald-400">58.3612</span></p>
+                    <p>Vận tốc trích dẫn: <span id="seed-velocity" class="font-mono text-amber-400">556.7 / năm</span></p>
+                    <div class="pt-1">
+                        <a id="seed-link" href="#" target="_blank" class="text-[11px] text-sky-400 hover:underline flex items-center gap-1">
+                            <span>🔗</span> Xem DOI / OpenAlex &rarr;
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Column: Results & Interactive Network (8 cols) -->
+        <section class="lg:col-span-8 space-y-6">
+
+            <!-- Top-K Table -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+                        <span>🏆</span> Top Bài Báo Tiềm Năng Bùng Nổ (Tầng 2 GBT Reranking)
+                    </h2>
+                    <span id="response-time" class="text-xs text-emerald-400 font-mono">0 ms</span>
+                </div>
+
+                <div class="overflow-x-auto rounded-lg border border-slate-800">
+                    <table class="w-full text-left text-xs text-slate-300">
+                        <thead class="bg-slate-800/80 text-slate-400 uppercase text-[10px] tracking-wider font-semibold border-b border-slate-700">
+                            <tr>
+                                <th class="px-3 py-2.5 w-12 text-center">Hạng</th>
+                                <th class="px-3 py-2.5">Tên Bài Báo Khoa Học (Title) & ID</th>
+                                <th class="px-3 py-2.5 text-center">Năm</th>
+                                <th class="px-3 py-2.5 text-right">Vận tốc (V)</th>
+                                <th class="px-3 py-2.5 text-center">P(Bùng nổ)</th>
+                                <th class="px-3 py-2.5 text-right">Score</th>
+                            </tr>
+                        </thead>
+                        <tbody id="recommendation-tbody" class="divide-y divide-slate-800/60">
+                            <!-- Rows injected by JavaScript -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Interactive Graph Container -->
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-3">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
+                        <span>🌐</span> Mạng Lưới Liên Kết Trích Dẫn Tương Tác
+                    </h2>
+                    <span class="text-[11px] text-slate-400">Rê chuột xem tên bài &bull; Phóng to &bull; Kéo thả</span>
+                </div>
+                <div id="network-graph"></div>
+            </div>
+
+        </section>
+    </main>
+
+    <script>
+        let networkInstance = null;
+        const API_BASE = window.location.port === '5500' ? 'http://127.0.0.1:8000' : '';
+
+        // Elements
+        const titleSearchInput = document.getElementById('title-search-input');
+        const titleSearchBtn = document.getElementById('title-search-btn');
+        const searchSuggestions = document.getElementById('search-suggestions');
+        const paperIdInput = document.getElementById('paper-id-input');
+        const alphaSlider = document.getElementById('alpha-slider');
+        const alphaVal = document.getElementById('alpha-val');
+        const topkSlider = document.getElementById('topk-slider');
+        const topkVal = document.getElementById('topk-val');
+        const searchBtn = document.getElementById('search-btn');
+        const tbody = document.getElementById('recommendation-tbody');
+        const responseTimeSpan = document.getElementById('response-time');
+
+        // Tìm kiếm theo tên bài báo (Autocomplete)
+        let debounceTimer;
+        titleSearchInput.addEventListener('input', (e) => {
+            clearTimeout(debounceTimer);
+            const q = e.target.value.trim();
+            if (q.length < 3) {
+                searchSuggestions.classList.add('hidden');
+                return;
+            }
+            debounceTimer = setTimeout(() => {
+                fetchTitleSuggestions(q);
+            }, 300);
+        });
+
+        titleSearchBtn.addEventListener('click', () => {
+            const q = titleSearchInput.value.trim();
+            if (q.length >= 2) fetchTitleSuggestions(q);
+        });
+
+        async function fetchTitleSuggestions(query) {
+            try {
+                const res = await fetch(`${API_BASE}/api/search?q=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                const items = data.results || [];
+
+                if (items.length === 0) {
+                    searchSuggestions.innerHTML = '<div class="p-3 text-xs text-slate-500">Không tìm thấy bài báo phù hợp trong đồ thị.</div>';
+                } else {
+                    searchSuggestions.innerHTML = '';
+                    items.forEach(item => {
+                        const div = document.createElement('div');
+                        div.className = 'p-2.5 hover:bg-slate-800 cursor-pointer transition-colors';
+                        div.innerHTML = `
+                            <p class="text-xs font-semibold text-sky-400">${item.title}</p>
+                            <p class="text-[11px] text-slate-400">Năm: ${item.year} &bull; <span class="font-mono text-emerald-400">Paper ID: #${item.paper_id}</span></p>
+                        `;
+                        div.addEventListener('click', () => {
+                            paperIdInput.value = item.paper_id;
+                            searchSuggestions.classList.add('hidden');
+                            fetchRecommendations();
+                        });
+                        searchSuggestions.appendChild(div);
+                    });
+                }
+                searchSuggestions.classList.remove('hidden');
+            } catch (err) {
+                console.error('Error fetching suggestions:', err);
+            }
+        }
+
+        // Đóng dropdown khi click ra ngoài
+        document.addEventListener('click', (e) => {
+            if (!titleSearchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
+                searchSuggestions.classList.add('hidden');
+            }
+        });
+
+        alphaSlider.addEventListener('input', (e) => {
+            alphaVal.innerText = parseFloat(e.target.value).toFixed(2);
+        });
+
+        topkSlider.addEventListener('input', (e) => {
+            topkVal.innerText = e.target.value;
+        });
+
+        searchBtn.addEventListener('click', () => {
+            fetchRecommendations();
+        });
+
+        paperIdInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                fetchRecommendations();
+            }
+        });
+
+        async function fetchRecommendations() {
+            const paperId = paperIdInput.value.trim();
+            if (!paperId) {
+                alert('Vui lòng nhập Paper ID');
+                return;
+            }
+
+            const alpha = alphaSlider.value;
+            const topK = topkSlider.value;
+
+            searchBtn.disabled = true;
+            searchBtn.innerHTML = '<span>⏳</span> Đang tìm kiếm...';
+
+            try {
+                const url = `${API_BASE}/api/recommend?paper_id=${paperId}&alpha=${alpha}&top_k=${topK}`;
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (!res.ok) {
+                    alert(data.error || 'Đã xảy ra lỗi.');
+                    return;
+                }
+
+                // Cập nhật thẻ Seed
+                const seed = data.seed_paper;
+                document.getElementById('seed-title').innerText = seed.title || `Paper #${seed.paper_id}`;
+                document.getElementById('seed-id').innerText = '#' + seed.paper_id;
+                document.getElementById('seed-year').innerText = seed.pub_year;
+                document.getElementById('seed-pr').innerText = seed.pagerank_score.toFixed(4);
+                document.getElementById('seed-velocity').innerText = seed.citation_velocity.toFixed(1) + ' / năm';
+                
+                const seedLink = document.getElementById('seed-link');
+                if (seed.doi) {
+                    seedLink.href = seed.doi;
+                    seedLink.style.display = 'inline-flex';
+                } else {
+                    seedLink.style.display = 'none';
+                }
+
+                responseTimeSpan.innerText = `⏱ Latency: ${data.latency_ms} ms`;
+
+                // Cập nhật Bảng Top-K
+                tbody.innerHTML = '';
+                data.recommendations.forEach((rec, idx) => {
+                    const badgeColor = idx === 0 ? 'text-amber-400 font-bold' : (idx < 3 ? 'text-emerald-400 font-semibold' : 'text-slate-400');
+                    const row = `
+                        <tr class="hover:bg-slate-800/50 transition-colors">
+                            <td class="px-3 py-3 text-center ${badgeColor}">#${idx + 1}</td>
+                            <td class="px-3 py-3">
+                                <a href="${rec.doi || '#'}" target="_blank" class="font-semibold text-sky-400 hover:text-sky-300 hover:underline block text-xs">
+                                    ${rec.title}
+                                </a>
+                                <span class="text-[11px] text-slate-400 font-mono">Paper ID: #${rec.paper_id}</span>
+                            </td>
+                            <td class="px-3 py-3 text-center text-slate-300 font-mono">${rec.pub_year}</td>
+                            <td class="px-3 py-3 text-right font-mono text-slate-300">${rec.citation_velocity.toFixed(1)}</td>
+                            <td class="px-3 py-3 text-center font-mono text-emerald-400 font-bold">${rec.p_emerging}%</td>
+                            <td class="px-3 py-3 text-right font-mono text-amber-300 font-bold">${rec.final_score} đ</td>
+                        </tr>
+                    `;
+                    tbody.innerHTML += row;
+                });
+
+                // Cập nhật Đồ thị Mạng tương tác Vis.js
+                renderNetworkGraph(seed, data.recommendations);
+
+            } catch (err) {
+                console.error(err);
+                alert('Không thể kết nối đến máy chủ API: ' + err.message);
+            } finally {
+                searchBtn.disabled = false;
+                searchBtn.innerHTML = '<span>⚡</span> Khám Phá Bài Báo Tiềm Năng';
+            }
+        }
+
+        function renderNetworkGraph(seed, recommendations) {
+            const container = document.getElementById('network-graph');
+            
+            const nodes = [];
+            const edges = [];
+
+            // Node Hạt nhân (Seed Paper)
+            const seedNodeId = 'seed_' + seed.paper_id;
+            nodes.push({
+                id: seedNodeId,
+                label: `★ Seed\n#${seed.paper_id}`,
+                color: { background: '#EF4444', border: '#FCA5A5' },
+                shape: 'dot',
+                size: 28,
+                font: { color: '#ffffff', size: 12, face: 'sans-serif' },
+                title: `[Seed Paper]\nTiêu đề: ${seed.title}\nID: #${seed.paper_id}\nNăm: ${seed.pub_year}\nPageRank: ${seed.pagerank_score.toFixed(4)}`
+            });
+
+            // Nodes gợi ý Top-K
+            recommendations.forEach((rec, idx) => {
+                const recNodeId = 'rec_' + rec.paper_id;
+                const isTop1 = idx === 0;
+
+                nodes.push({
+                    id: recNodeId,
+                    label: `#${rec.paper_id}\n(${rec.final_score}đ)`,
+                    color: {
+                        background: isTop1 ? '#10B981' : '#0284C7',
+                        border: isTop1 ? '#6EE7B7' : '#38BDF8'
+                    },
+                    shape: 'dot',
+                    size: 16 + (rec.p_emerging / 12),
+                    font: { color: '#ffffff', size: 10, face: 'sans-serif' },
+                    title: `Tiêu đề: ${rec.title}\nID: #${rec.paper_id}\nNăm XB: ${rec.pub_year}\nXác suất bùng nổ: ${rec.p_emerging}%\nScore: ${rec.final_score} điểm`
+                });
+
+                edges.push({
+                    from: seedNodeId,
+                    to: recNodeId,
+                    value: rec.final_score / 15,
+                    color: { color: '#475569', opacity: 0.6 }
+                });
+            });
+
+            const graphData = {
+                nodes: new vis.DataSet(nodes),
+                edges: new vis.DataSet(edges)
+            };
+
+            const options = {
+                physics: {
+                    barnesHut: {
+                        gravitationalConstant: -2500,
+                        springLength: 110,
+                        springConstant: 0.04
+                    }
+                },
+                interaction: {
+                    hover: true,
+                    zoomView: true
+                }
+            };
+
+            if (networkInstance) {
+                networkInstance.destroy();
+            }
+            networkInstance = new vis.Network(container, graphData, options);
+        }
+
+        // Tự động load lần đầu
+        window.onload = () => {
+            fetchRecommendations();
+        };
+    </script>
+</body>
+</html>
