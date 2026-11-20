@@ -4,6 +4,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/Apache_Spark-3.5-E25A1C?style=for-the-badge&logo=apachespark&logoColor=white" alt="Spark" />
   <img src="https://img.shields.io/badge/PySpark_MLlib-Distributed_ML-blue?style=for-the-badge&logo=apache" alt="MLlib" />
+  <a href="https://ogb.stanford.edu/docs/nodeprop/#ogbn-mag"><img src="https://img.shields.io/badge/Dataset-Stanford_OGBN--MAG-7928CA?style=for-the-badge" alt="OGBN-MAG Dataset" /></a>
   <img src="https://img.shields.io/badge/GraphFrames-PageRank-green?style=for-the-badge" alt="GraphFrames" />
   <img src="https://img.shields.io/badge/FastAPI-Production_API-009688?style=for-the-badge&logo=fastapi&logoColor=white" alt="FastAPI" />
   <img src="https://img.shields.io/badge/Docker-Enabled-2496ED?style=for-the-badge&logo=docker&logoColor=white" alt="Docker" />
@@ -70,12 +71,30 @@ Hệ thống được thiết kế theo mô hình lọc 2 tầng kết hợp 3 c
 
 ## 🗄️ 3. Dữ liệu Lớn & Chuẩn mực Chống Rò rỉ Thời gian (Zero-Leakage)
 
-* **Tập dữ liệu:** **OGBN-MAG (Microsoft Academic Graph)** từ Đại học Stanford gồm **694,450 bài báo** và **7.1 triệu cạnh trích dẫn**.
-* **Nguyên tắc Phân chia Thời gian Nghiêm ngặt (Strict Temporal Split):**
-  * `Train`: Các bài báo xuất bản $\le 2016$ (**559,373** bài báo).
-  * `Validation`: Các bài báo xuất bản năm $2017$ (**70,198** bài báo).
-  * `Test`: Các bài báo xuất bản năm $2018$ (**64,879** bài báo) và đánh giá lượng tăng trích dẫn trong tương lai ($\ge 2019$).
-  * **Cam kết toàn vẹn học thuật:** Giao thoa giữa 3 tập là chính xác **0 bài báo**. Tuyệt đối không dùng K-Fold ngẫu nhiên xuyên suốt tập dữ liệu để ngăn chặn triệt để nguy cơ trích dẫn tương lai rò rỉ ngược về quá khứ (*Data Leakage*).
+### 3.1. Nguồn Dữ liệu & Liên kết Tải về (Dataset Links)
+* **Tên bộ dữ liệu:** **Stanford OGBN-MAG (Open Graph Benchmark - Microsoft Academic Graph)**
+* 🌐 **Trang chủ Dataset chính thức:** [https://ogb.stanford.edu/docs/nodeprop/#ogbn-mag](https://ogb.stanford.edu/docs/nodeprop/#ogbn-mag)
+* 📦 **Link tải trực tiếp từ Stanford SNAP:** [http://snap.stanford.edu/ogb/data/nodeproppred/mag.zip](http://snap.stanford.edu/ogb/data/nodeproppred/mag.zip)
+* 📄 **Bài báo công bố chuẩn quốc tế (NeurIPS 2020):** [Hu et al., "Open Graph Benchmark: Datasets for Machine Learning on Graphs"](https://arxiv.org/abs/2005.00687)
+* 💻 **Cách tải tự động bằng Python qua thư viện chính thức `ogb`:**
+  ```python
+  # Cài đặt thư viện OGB của Đại học Stanford
+  pip install ogb
+
+  # Tải và khởi tạo bộ dữ liệu OGBN-MAG
+  from ogb.nodeproppred import NodePropPredDataset
+  dataset = NodePropPredDataset(name="ogbn-mag", root="data")
+  ```
+
+* 🗂️ **Vị trí lưu trữ dữ liệu trong Project:**
+  * `data/processed/citation_ml_dataset.parquet`: Bộ dữ liệu Big Data phân tán **694,450 bài báo** và **7.1 triệu liên kết trích dẫn** đã được trích xuất đặc trưng và phân vùng theo thời gian.
+  * `data/processed/citation_lens.db`: Cơ sở dữ liệu SQLite serving thời gian thực (chứa bảng `papers`, `mag_mapping`, `paper_titles`).
+
+### 3.2. Nguyên tắc Phân chia Thời gian Nghiêm ngặt (Strict Temporal Split)
+* `Train`: Các bài báo xuất bản $\le 2016$ (**559,373** bài báo).
+* `Validation`: Các bài báo xuất bản năm $2017$ (**70,198** bài báo).
+* `Test`: Các bài báo xuất bản năm $2018$ (**64,879** bài báo) và đánh giá lượng tăng trích dẫn trong tương lai ($\ge 2019$).
+* **Cam kết toàn vẹn học thuật:** Giao thoa giữa 3 tập là chính xác **0 bài báo**. Tuyệt đối không dùng K-Fold ngẫu nhiên xuyên suốt tập dữ liệu để ngăn chặn triệt để nguy cơ trích dẫn tương lai rò rỉ ngược về quá khứ (*Data Leakage*).
 
 <p align="center">
   <img src="assets/images/dataset_charts/chart_cell39_0.png" width="32%" alt="Phân phối bài báo theo năm" />
