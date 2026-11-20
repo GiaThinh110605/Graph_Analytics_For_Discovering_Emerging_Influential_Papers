@@ -203,51 +203,85 @@ Thực nghiệm đối chuẩn được triển khai đầy đủ trên **22 not
 
 ---
 
-## 🚀 8. Hướng dẫn Cài đặt & Chạy Docker Đơn giản
+## 🚀 8. Hướng dẫn Cài đặt & Khởi chạy Hệ thống
 
-Toàn bộ hệ thống Web Dashboard & Mô hình dự báo đã được đóng gói hoàn chỉnh bằng Docker. Bạn có thể khởi chạy ứng dụng chỉ với vài bước đơn giản:
-
-### 8.1. Điều kiện tiên quyết
-* Đã cài đặt **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** trên máy tính (Windows / macOS / Linux) và đang mở Docker hoạt động.
+Bạn có thể lựa chọn khởi chạy hệ thống theo 1 trong 2 phương pháp:
+* **Cách 1: Khởi chạy Trực tiếp Backend bằng FastAPI (Local Python)** – Thích hợp để phát triển, debug, tinh chỉnh mã nguồn và kiểm thử API nhanh mà không cần môi trường ảo hóa.
+* **Cách 2: Khởi chạy Trọn gói bằng Docker Container** – Thích hợp triển khai sản phẩm hoàn chỉnh, độc lập và tương thích đa nền tảng.
 
 ---
 
-### 8.2. Các bước khởi chạy nhanh
+### 8.1. Cách 1: Khởi chạy Trực tiếp Backend bằng FastAPI (Local Python)
 
-#### 👉 Cách 1: Chạy trực tiếp từ Docker Image đã có
-Nếu bạn đã có image `graph-2:latest`, chỉ cần mở Terminal/Command Prompt và chạy một lệnh duy nhất:
+#### Bước 1: Chuẩn bị Môi trường Python
+* **Yêu cầu:** Python phiên bản **3.9+** trở lên.
+* Khuyến nghị tạo môi trường ảo (virtual environment) để cô lập các gói thư viện:
+```bash
+# 1. Mở Terminal tại thư mục gốc của dự án
+cd Graph_Analytics_For_Discovering_Emerging_Influential_Papers
+
+# 2. Tạo môi trường ảo
+python3 -m venv venv
+
+# 3. Kích hoạt môi trường ảo:
+# Trên macOS / Linux:
+source venv/bin/activate
+# Trên Windows (Command Prompt):
+venv\Scripts\activate.bat
+# Trên Windows (PowerShell):
+venv\Scripts\Activate.ps1
+```
+
+#### Bước 2: Cài đặt các Thư viện Phụ thuộc
+Cài đặt các gói thư viện nhẹ trong `requirements.txt` (`fastapi`, `uvicorn`, `numpy`, `pandas`, `jinja2`):
+```bash
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+#### Bước 3: Khởi chạy Backend Server
+Bạn có thể khởi động server FastAPI bằng 1 trong 2 lệnh sau:
+
+* **Lựa chọn A (Khuyên dùng cho Development - Tự động reload khi sửa code):**
+  ```bash
+  uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+  ```
+* **Lựa chọn B (Chạy trực tiếp module Python):**
+  ```bash
+  python -m app.main
+  ```
+
+Sau khi chạy lệnh, màn hình Terminal sẽ thông báo:
+```text
+INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [...]
+INFO:     Application startup complete.
+```
+
+---
+
+### 8.2. Cách 2: Khởi chạy Trọn gói bằng Docker Container
+
+Nếu máy tính đã cài đặt **[Docker Desktop](https://www.docker.com/products/docker-desktop/)** (Windows / macOS / Linux) và ứng dụng Docker đang bật:
+
+#### 👉 Lựa chọn 1: Chạy trực tiếp từ Docker Image đã có
+Nếu bạn đã có sẵn image `graph-2:latest`:
 ```bash
 docker run -d -p 8000:80 --name citation-lens graph-2:latest
 ```
 
-#### 👉 Cách 2: Tự build Image từ mã nguồn (Khuyên dùng khi clone repo mới)
-Nếu bạn vừa tải mã nguồn về máy:
-
-* **Bước 1:** Mở Terminal tại thư mục gốc của dự án và tiến hành build image:
-  ```bash
-  docker build -t graph-2:latest .
-  ```
-* **Bước 2:** Khởi chạy container ánh xạ cổng 8000 của máy vào cổng 80 trong container:
-  ```bash
-  docker run -d -p 8000:80 --name citation-lens graph-2:latest
-  ```
-
----
-
-### 8.3. Truy cập Ứng dụng & Trải nghiệm
-Sau khi container khởi chạy thành công, mở trình duyệt web và truy cập:
-* 🌐 **Giao diện Web tương tác (Dashboard):** [http://localhost:8000/](http://localhost:8000/)
-* 📚 **Tài liệu API Swagger UI:** [http://localhost:8000/docs](http://localhost:8000/docs)
-
-> [!TIP]
-> * Nhập từ khóa bất kỳ (ví dụ: `graph neural networks`, `deep learning`, `attention`) để tìm kiếm bài báo hạt nhân.
-> * Hệ thống sẽ tự động kích hoạt bộ lọc Two-Stage Hybrid Recommender và hiển thị Top bài báo tiềm năng bùng nổ nhất kèm link DOI bài báo gốc.
-
----
-
-### 8.4. Các lệnh quản lý Docker hữu ích
+#### 👉 Lựa chọn 2: Tự build Image từ mã nguồn (Khuyên dùng khi clone repo mới)
 ```bash
-# Kiểm tra container đang chạy
+# Bước 1: Build Docker Image từ Dockerfile
+docker build -t graph-2:latest .
+
+# Bước 2: Khởi chạy container ánh xạ cổng 8000 máy chủ vào cổng 80 container
+docker run -d -p 8000:80 --name citation-lens graph-2:latest
+```
+
+#### Các lệnh quản lý Docker hữu ích:
+```bash
+# Kiểm tra danh sách container đang chạy
 docker ps
 
 # Xem log hoạt động theo thời gian thực
@@ -265,21 +299,29 @@ docker rm -f citation-lens
 
 ---
 
-### 8.5. (Tùy chọn) Chạy trực tiếp bằng Python (Không dùng Docker)
-Nếu không dùng Docker, bạn có thể chạy trực tiếp trên máy bằng môi trường Python 3.9+:
-```bash
-# Cài đặt thư viện phụ thuộc
-pip install -r requirements.txt
+### 8.3. Truy cập Ứng dụng & Kiểm thử API
 
-# Khởi chạy server FastAPI
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
-Truy cập tại: [http://localhost:8000/](http://localhost:8000/)
+Sau khi server khởi chạy thành công (theo Cách 1 hoặc Cách 2), mở trình duyệt web và truy cập:
 
-### 8.6. Các Endpoints API Chính:
+* 🌐 **Giao diện Web tương tác (Dashboard):** [http://localhost:8000/](http://localhost:8000/)
+* 📚 **Tài liệu API Swagger UI tương tác:** [http://localhost:8000/docs](http://localhost:8000/docs)
+* 📖 **Tài liệu API ReDoc:** [http://localhost:8000/redoc](http://localhost:8000/redoc)
+
+> [!TIP]
+> * **Tìm kiếm & Gợi ý trên Web Dashboard:** Nhập từ khóa bất kỳ (ví dụ: `graph neural networks`, `deep learning`, `attention`) để tìm kiếm bài báo hạt nhân ($P_{seed}$). Hệ thống sẽ tự động kích hoạt bộ lọc Two-Stage Hybrid Recommender và hiển thị Top bài báo tiềm năng bùng nổ nhất kèm link DOI bài báo gốc.
+> * **Kiểm thử API qua dòng lệnh (cURL):**
+>   ```bash
+>   # 1. Tìm kiếm bài báo theo tiêu đề (<10ms)
+>   curl "http://localhost:8000/api/search?q=graph"
+>
+>   # 2. Gợi ý Top-10 bài báo bùng nổ cho một bài báo hạt nhân
+>   curl "http://localhost:8000/api/recommend?paper_id=2376672&alpha=0.4&top_k=10"
+>   ```
+
+### 8.4. Các Endpoints API Chính của Backend:
 * `GET /`: Giao diện Dashboard tìm kiếm và khuyến nghị bài báo khoa học.
 * `GET /api/search?q={keyword}`: Tìm kiếm bài báo hạt nhân ($P_{seed}$) theo tiêu đề với thời gian phản hồi <10ms.
-* `GET /api/recommend?paper_id={id}&alpha=0.4&top_k=10`: Gợi ý Two-Stage Hybrid trả về Top-K bài báo tiềm năng bùng nổ nhất kèm liên kết định danh số DOI thực tế.
+* `GET /api/recommend?paper_id={id}&alpha=0.4&top_k=10`: Gợi ý Two-Stage Hybrid (Graph + Semantic + PySpark MLlib GBT Reranking) trả về Top-K bài báo tiềm năng bùng nổ kèm định danh số DOI thực tế.
 
 ---
 

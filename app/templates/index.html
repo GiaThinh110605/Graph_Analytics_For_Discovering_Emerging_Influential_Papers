@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CitationLens - Two-Stage Hybrid Paper Recommender</title>
-    <!-- TailwindCSS CDN -->
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Vis.js CDN for Network Graph -->
+    
     <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
     <style>
         #network-graph {
@@ -19,7 +19,7 @@
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans">
 
-    <!-- Header Bar -->
+    
     <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
             <div class="flex items-center space-x-3">
@@ -39,17 +39,17 @@
         </div>
     </header>
 
-    <!-- Main Content -->
+    
     <main class="max-w-7xl mx-auto px-4 py-6 flex-1 w-full grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <!-- Left Column: Controls (4 cols) -->
+        
         <section class="lg:col-span-4 space-y-5">
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-4">
                 <h2 class="text-sm font-bold uppercase tracking-wider text-slate-300 flex items-center gap-2">
                     <span>🎯</span> Tìm Kiếm & Đầu Vào Bài Báo
                 </h2>
 
-                <!-- 1. Ô TÌM KIẾM BẰNG TÊN BÀI BÁO (Title Search Autocomplete) -->
+                
                 <div class="relative">
                     <label class="block text-xs font-semibold text-slate-300 mb-1">🔍 Tìm kiếm theo Tên bài báo:</label>
                     <div class="flex gap-2">
@@ -59,19 +59,19 @@
                         </button>
                     </div>
 
-                    <!-- Dropdown danh sách gợi ý khi gõ tên -->
+                    
                     <div id="search-suggestions" class="hidden absolute left-0 right-0 top-full mt-1 bg-slate-900 border border-slate-700 rounded-lg shadow-2xl z-50 max-h-56 overflow-y-auto divide-y divide-slate-800">
-                        <!-- Suggestions injected here -->
+                        
                     </div>
                 </div>
 
-                <!-- 2. Hoặc nhập trực tiếp Paper ID -->
+                
                 <div>
                     <label class="block text-xs font-semibold text-slate-400 mb-1">Hoặc nhập Paper ID đã biết:</label>
                     <input type="number" id="paper-id-input" value="472963" placeholder="Ví dụ: 472963, 664028, 100..." class="w-full bg-slate-800 border border-slate-700 rounded-lg px-3 py-2 text-sm text-sky-400 font-mono focus:outline-none focus:border-sky-500">
                 </div>
 
-                <!-- 3. Alpha Slider -->
+                
                 <div>
                     <div class="flex justify-between text-xs text-slate-400 mb-1">
                         <span>Trọng số lai ghép (&alpha;):</span>
@@ -84,7 +84,7 @@
                     </div>
                 </div>
 
-                <!-- 4. Top-K Slider -->
+                
                 <div>
                     <div class="flex justify-between text-xs text-slate-400 mb-1">
                         <span>Số lượng gợi ý (Top-K):</span>
@@ -93,13 +93,13 @@
                     <input type="range" id="topk-slider" min="5" max="25" step="1" value="10" class="w-full accent-emerald-500 cursor-pointer">
                 </div>
 
-                <!-- Action Button -->
+                
                 <button id="search-btn" class="w-full py-2.5 px-4 bg-sky-600 hover:bg-sky-500 active:bg-sky-700 text-white font-semibold rounded-lg text-sm shadow-md transition-all flex items-center justify-center gap-2">
                     <span>⚡</span> Khám Phá Bài Báo Tiềm Năng
                 </button>
             </div>
 
-            <!-- Seed Info Card -->
+            
             <div id="seed-card" class="bg-slate-900 border border-slate-800 rounded-xl p-4 shadow-lg space-y-2">
                 <h3 class="text-xs font-bold uppercase tracking-wider text-sky-400 flex items-center gap-1.5">
                     <span>📌</span> Bài Báo Đang Chọn (Seed Paper)
@@ -118,10 +118,10 @@
             </div>
         </section>
 
-        <!-- Right Column: Results & Interactive Network (8 cols) -->
+        
         <section class="lg:col-span-8 space-y-6">
 
-            <!-- Top-K Table -->
+            
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-3">
                 <div class="flex items-center justify-between">
                     <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
@@ -143,13 +143,13 @@
                             </tr>
                         </thead>
                         <tbody id="recommendation-tbody" class="divide-y divide-slate-800/60">
-                            <!-- Rows injected by JavaScript -->
+                            
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Interactive Graph Container -->
+            
             <div class="bg-slate-900 border border-slate-800 rounded-xl p-5 shadow-lg space-y-3">
                 <div class="flex items-center justify-between">
                     <h2 class="text-sm font-bold uppercase tracking-wider text-slate-200 flex items-center gap-2">
@@ -167,7 +167,6 @@
         let networkInstance = null;
         const API_BASE = window.location.port === '5500' ? 'http://127.0.0.1:8000' : '';
 
-        // Elements
         const titleSearchInput = document.getElementById('title-search-input');
         const titleSearchBtn = document.getElementById('title-search-btn');
         const searchSuggestions = document.getElementById('search-suggestions');
@@ -180,7 +179,6 @@
         const tbody = document.getElementById('recommendation-tbody');
         const responseTimeSpan = document.getElementById('response-time');
 
-        // Tìm kiếm theo tên bài báo (Autocomplete)
         let debounceTimer;
         titleSearchInput.addEventListener('input', (e) => {
             clearTimeout(debounceTimer);
@@ -230,7 +228,6 @@
             }
         }
 
-        // Đóng dropdown khi click ra ngoài
         document.addEventListener('click', (e) => {
             if (!titleSearchInput.contains(e.target) && !searchSuggestions.contains(e.target)) {
                 searchSuggestions.classList.add('hidden');
@@ -278,7 +275,6 @@
                     return;
                 }
 
-                // Cập nhật thẻ Seed
                 const seed = data.seed_paper;
                 document.getElementById('seed-title').innerText = seed.title || `Paper #${seed.paper_id}`;
                 document.getElementById('seed-id').innerText = '#' + seed.paper_id;
@@ -296,7 +292,6 @@
 
                 responseTimeSpan.innerText = `⏱ Latency: ${data.latency_ms} ms`;
 
-                // Cập nhật Bảng Top-K
                 tbody.innerHTML = '';
                 data.recommendations.forEach((rec, idx) => {
                     const badgeColor = idx === 0 ? 'text-amber-400 font-bold' : (idx < 3 ? 'text-emerald-400 font-semibold' : 'text-slate-400');
@@ -318,7 +313,6 @@
                     tbody.innerHTML += row;
                 });
 
-                // Cập nhật Đồ thị Mạng tương tác Vis.js
                 renderNetworkGraph(seed, data.recommendations);
 
             } catch (err) {
@@ -336,7 +330,6 @@
             const nodes = [];
             const edges = [];
 
-            // Node Hạt nhân (Seed Paper)
             const seedNodeId = 'seed_' + seed.paper_id;
             nodes.push({
                 id: seedNodeId,
@@ -348,7 +341,6 @@
                 title: `[Seed Paper]\nTiêu đề: ${seed.title}\nID: #${seed.paper_id}\nNăm: ${seed.pub_year}\nPageRank: ${seed.pagerank_score.toFixed(4)}`
             });
 
-            // Nodes gợi ý Top-K
             recommendations.forEach((rec, idx) => {
                 const recNodeId = 'rec_' + rec.paper_id;
                 const isTop1 = idx === 0;
@@ -399,7 +391,6 @@
             networkInstance = new vis.Network(container, graphData, options);
         }
 
-        // Tự động load lần đầu
         window.onload = () => {
             fetchRecommendations();
         };

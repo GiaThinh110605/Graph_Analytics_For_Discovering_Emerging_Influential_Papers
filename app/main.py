@@ -8,7 +8,6 @@ from app.recommender import TwoStageHybridRecommender
 
 app = FastAPI(title="CitationLens API", description="Two-Stage Hybrid Scientific Paper Recommender")
 
-# Bật CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -22,7 +21,6 @@ templates = Jinja2Templates(directory="app/templates")
 
 @app.get("/", response_class=HTMLResponse)
 async def home(request: Request):
-    """Trang giao diện Web chính của CitationLens"""
     return templates.TemplateResponse(
         request=request,
         name="index.html",
@@ -30,22 +28,16 @@ async def home(request: Request):
     )
 
 @app.get("/api/search")
-async def search_papers(q: str = Query(..., min_length=2, description="Từ khóa hoặc tên bài báo")):
-    """API tìm kiếm bài báo bằng tên (Title search)"""
+async def search_papers(q: str = Query(..., min_length=2)):
     results = engine.search_by_title(q, limit=5)
     return {"query": q, "results": results}
 
 @app.get("/api/recommend")
 async def get_recommendations(
-    paper_id: int = Query(..., description="ID của bài báo hạt nhân"),
-    alpha: float = Query(0.4, ge=0.0, le=1.0, description="Hệ số lai ghép alpha"),
-    top_k: int = Query(10, ge=3, le=50, description="Số lượng gợi ý Top-K")
+    paper_id: int = Query(...),
+    alpha: float = Query(0.4, ge=0.0, le=1.0),
+    top_k: int = Query(10, ge=3, le=50)
 ):
-    """
-    API gợi ý Two-Stage Hybrid (3 Chiều):
-    - Tầng 1: Chiều 1 (Graph) + Chiều 2 (Content Semantic)
-    - Tầng 2: Chiều 3 (PySpark MLlib GBT Reranking)
-    """
     t0 = time.time()
     seed, ranked_df = engine.recommend(paper_id=paper_id, alpha=alpha, top_k=top_k)
     if not seed:
