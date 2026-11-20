@@ -3,22 +3,20 @@ import json
 import numpy as np
 import pandas as pd
 import os
-import urllib.request
 import urllib.parse
 
 class TwoStageHybridRecommender:
-    def __init__(self, db_path="data/processed/citation_lens.db", meta_path="models/best_gbt_metadata.json", cache_path="data/processed/cached_titles.json"):
+    """
+    Hệ thống gợi ý bài báo khoa học dạng lai 2 tầng (Two-Stage Hybrid Recommender):
+    - Tầng 1: Lọc ứng viên song song qua Chiều 1 (Đồ thị mạng) & Chiều 2 (Nội dung ngữ nghĩa)
+    - Tầng 2: Chiều 3 (Học máy phân tán PySpark MLlib GBT) tái xếp hạng theo xác suất bùng nổ P(Emerging)
+    Sử dụng 100% dữ liệu thực từ đồ thị trích dẫn OGBN-MAG (694,450 bài báo) trong SQLite (citation_lens.db).
+    Hoàn toàn không dùng demo catalog hay bộ đệm trung gian.
+    """
+    def __init__(self, db_path="data/processed/citation_lens.db", meta_path="models/best_gbt_metadata.json"):
         self.db_path = db_path
-        self.cache_path = cache_path
-        
-        self.cached_titles = {}
-        if os.path.exists(cache_path):
-            try:
-                with open(cache_path, "r", encoding="utf-8") as f:
-                    self.cached_titles = {int(k): v for k, v in json.load(f).items()}
-            except Exception:
-                self.cached_titles = {}
 
+        # Nạp siêu tham số và trọng số đặc trưng của mô hình GBT tốt nhất
         if os.path.exists(meta_path):
             with open(meta_path, "r", encoding="utf-8") as f:
                 self.metadata = json.load(f)
@@ -37,7 +35,7 @@ class TwoStageHybridRecommender:
     def dimension1_graph_retrieval(self, seed_paper: dict, limit: int = 100) -> pd.DataFrame:
         """
         CHIỀU 1: ĐỒ THỊ MẠNG (Graph-based Candidate Retrieval)
-        Lọc ứng viên có cấu trúc mạng vững chắc và độ uy tín cao (PageRank)
+        Lọc ứng viên có cấu trúc mạng vững chắc và độ uy tín cao (PageRank) từ tập 694k bài báo thực tế
         """
         conn = sqlite3.connect(self.db_path)
         pub_year = seed_paper["pub_year"]
@@ -59,7 +57,7 @@ class TwoStageHybridRecommender:
     def dimension2_content_retrieval(self, seed_paper: dict, limit: int = 100) -> pd.DataFrame:
         """
         CHIỀU 2: NỘI DUNG NGỮ NGHĨA (Content-based Semantic Retrieval)
-        Lọc ứng viên có độ tương đồng chuyên môn học thuật và cùng chủ đề/lĩnh vực (Field of Study)
+        Lọc ứng viên có độ tương đồng chuyên môn học thuật và cùng lĩnh vực nghiên cứu
         """
         conn = sqlite3.connect(self.db_path)
         pub_year = seed_paper["pub_year"]
@@ -81,7 +79,7 @@ class TwoStageHybridRecommender:
         return candidates
 
     def calculate_relevance(self, seed_paper: dict, candidates: pd.DataFrame) -> pd.DataFrame:
-        """Tính độ tương đồng chuyên môn Relevance (%) đối với tập ứng viên"""
+        """Tính độ tương đồng chuyên môn Relevance (%) đối với tập ứng viên (Công thức 2)"""
         if candidates.empty:
             return candidates
             
@@ -108,18 +106,22 @@ class TwoStageHybridRecommender:
         X = candidates[self.feature_cols].values
         X_scaled = X / self.scaler_std
 
+        # Biên dự báo tuyến tính (Công thức 3)
         raw_score = (X_scaled[:, 0] * self.weights[0] + 
                      X_scaled[:, 1] * self.weights[1] - 
                      X_scaled[:, 2] * self.weights[2])
+        # Hàm kích hoạt Sigmoid (Công thức 4)
         p_emerging = 1.0 / (1.0 + np.exp(-raw_score))
         candidates = candidates.copy()
         candidates["p_emerging"] = np.round(p_emerging * 100, 2)
 
+        # Điểm lai ghép tổng hợp (Công thức 5)
         final_score = alpha * candidates["relevance"] + (1.0 - alpha) * candidates["p_emerging"]
         candidates["final_score"] = np.round(final_score, 2)
 
         ranked_df = candidates.sort_values(by="final_score", ascending=False).head(top_k).copy()
         
+        # Bổ sung thông tin tiêu đề và DOI thực tế từ cơ sở dữ liệu
         titles = []
         dois = []
         for pid in ranked_df["paper_id"]:
@@ -134,9 +136,9 @@ class TwoStageHybridRecommender:
     def recommend(self, paper_id: int, alpha: float = 0.4, top_k: int = 10):
         """
         PIPELINE CHUẨN 2 TẦNG (TWO-STAGE HYBRID RECOMMENDER - 3 CHIỀU):
-        - Đầu vào (Input): Seed Paper
+        - Đầu vào (Input): Seed Paper thực tế
         - Tầng 1 (Retrieval): Chiều 1 (Graph) + Chiều 2 (Content) chạy SONG SONG -> Hợp nhất thành Phễu lọc
-        - Tầng 2 (Reranking): Chiều 3 (PySpark MLlib GBT Reranking) -> Top-K
+        - Tầng 2 (Reranking): Chiều 3 (PySpark MLlib GBT Reranking) -> Top-K bài báo tiềm năng nhất
         """
         seed = self.get_paper_info(paper_id)
         if not seed:
@@ -160,97 +162,92 @@ class TwoStageHybridRecommender:
         return seed, top_k_papers
 
     def fetch_real_metadata(self, paper_id: int):
-        if paper_id in self.cached_titles and self.cached_titles[paper_id].get("doi"):
-            return self.cached_titles[paper_id]
-
+        """Truy vấn định danh thực tế từ SQLite: bảng paper_titles và mag_mapping của OGBN-MAG"""
         conn = sqlite3.connect(self.db_path)
         cur = conn.cursor()
-        cur.execute("SELECT mag_id FROM mag_mapping WHERE paper_id = ?;", (paper_id,))
+
+        # 1. Truy vấn tiêu đề thực từ bảng paper_titles nếu có
+        cur.execute("SELECT title, doi, pub_year FROM paper_titles WHERE paper_id = ?;", (paper_id,))
         row = cur.fetchone()
+
+        # 2. Truy vấn định danh MAG ID từ bảng mag_mapping thực tế của Stanford OGBN-MAG (736k bài)
+        cur.execute("SELECT mag_id FROM mag_mapping WHERE paper_id = ?;", (paper_id,))
+        mag_row = cur.fetchone()
         conn.close()
 
-        if row:
-            mag_id = row[0]
-            try:
-                url = f"https://api.openalex.org/works/mag:{mag_id}?select=id,title,doi,publication_year"
-                req = urllib.request.Request(url, headers={"User-Agent": "mailto:citationlens@iuh.edu.vn"})
-                with urllib.request.urlopen(req, timeout=3) as res:
-                    data = json.loads(res.read().decode())
-                    t = data.get("title")
-                    d = data.get("doi")
-                    meta = {
-                        "title": t if t else f"Research Paper #{paper_id}",
-                        "doi": d if d else f"https://openalex.org/works/mag:{mag_id}",
-                        "year": data.get("publication_year")
-                    }
-                    self.cached_titles[paper_id] = meta
-                    try:
-                        with open(self.cache_path, "w", encoding="utf-8") as f:
-                            json.dump(self.cached_titles, f, ensure_ascii=False, indent=2)
-                    except Exception:
-                        pass
-                    return meta
-            except Exception:
-                pass
+        mag_id = mag_row[0] if mag_row else str(paper_id)
+        openalex_url = f"https://openalex.org/works/mag:{mag_id}"
+
+        if row and row[0]:
+            return {
+                "title": row[0],
+                "doi": row[1] if row[1] else openalex_url,
+                "year": row[2],
+                "mag_id": mag_id
+            }
 
         return {
-            "title": f"Scientific Research Paper #{paper_id}",
-            "doi": f"https://scholar.google.com/scholar?q={paper_id}",
-            "year": None
+            "title": f"OGBN-MAG Research Paper #{paper_id}",
+            "doi": openalex_url,
+            "year": None,
+            "mag_id": mag_id
         }
 
     def search_by_title(self, query: str, limit: int = 6):
-        results = []
-        tokens = [t.lower() for t in query.strip().split() if len(t) >= 2]
-        
-        for pid, item in self.cached_titles.items():
-            title_lower = item.get("title", "").lower()
-            if any(tok in title_lower for tok in tokens):
-                match_count = sum(1 for tok in tokens if tok in title_lower)
-                results.append((match_count, {
+        """Tìm kiếm bài báo trực tiếp từ SQLite (bảng paper_titles và papers)"""
+        conn = sqlite3.connect(self.db_path)
+        cur = conn.cursor()
+        query_clean = query.strip()
+
+        # Nếu người dùng tìm kiếm bằng trực tiếp Paper ID số
+        if query_clean.isdigit():
+            pid = int(query_clean)
+            cur.execute("SELECT paper_id, pub_year FROM papers WHERE paper_id = ?;", (pid,))
+            p_row = cur.fetchone()
+            if p_row:
+                meta = self.fetch_real_metadata(pid)
+                conn.close()
+                return [{
                     "paper_id": pid,
-                    "title": item["title"],
-                    "year": item.get("year", "N/A"),
-                    "doi": item.get("doi", "")
-                }))
-        
+                    "title": meta.get("title"),
+                    "year": p_row[1],
+                    "doi": meta.get("doi")
+                }]
+
+        tokens = [t.strip().lower() for t in query_clean.split() if len(t.strip()) >= 2]
+        if not tokens:
+            conn.close()
+            return []
+
+        # Truy vấn tìm kiếm SQL theo từ khóa tiêu đề
+        where_clauses = ["LOWER(title) LIKE ?" for _ in tokens]
+        sql = f"""
+            SELECT paper_id, title, pub_year, doi
+            FROM paper_titles
+            WHERE {" OR ".join(where_clauses)}
+            LIMIT {limit * 3};
+        """
+        params = [f"%{tok}%" for tok in tokens]
+        cur.execute(sql, params)
+        rows = cur.fetchall()
+        conn.close()
+
+        results = []
+        for pid, title, yr, doi in rows:
+            title_lower = title.lower()
+            match_score = sum(1 for tok in tokens if tok in title_lower)
+            results.append((match_score, {
+                "paper_id": pid,
+                "title": title,
+                "year": yr if yr else "N/A",
+                "doi": doi if doi else f"https://scholar.google.com/scholar?q={urllib.parse.quote(title)}"
+            }))
+
         results.sort(key=lambda x: x[0], reverse=True)
-        final_list = [r[1] for r in results[:limit]]
-
-        if len(final_list) < limit:
-            try:
-                url = f"https://api.openalex.org/works?search={urllib.parse.quote(query)}&per_page=15&select=id,title,doi,ids,publication_year"
-                req = urllib.request.Request(url, headers={"User-Agent": "mailto:citationlens@iuh.edu.vn"})
-                with urllib.request.urlopen(req, timeout=4) as res:
-                    data = json.loads(res.read().decode())
-                    conn = sqlite3.connect(self.db_path)
-                    cur = conn.cursor()
-
-                    for r in data.get("results", []):
-                        mag_id = r.get("ids", {}).get("mag")
-                        if mag_id:
-                            cur.execute("SELECT paper_id FROM mag_mapping WHERE mag_id = ?;", (str(mag_id),))
-                            match = cur.fetchone()
-                            if match:
-                                pid = match[0]
-                                cur.execute("SELECT pub_year FROM papers WHERE paper_id = ?;", (pid,))
-                                p_row = cur.fetchone()
-                                if p_row:
-                                    title = r.get("title")
-                                    doi = r.get("doi")
-                                    item = {"paper_id": pid, "title": title, "year": p_row[0], "doi": doi}
-                                    self.cached_titles[pid] = item
-                                    if not any(x["paper_id"] == pid for x in final_list):
-                                        final_list.append(item)
-                                    if len(final_list) >= limit:
-                                        break
-                    conn.close()
-            except Exception:
-                pass
-
-        return final_list[:limit]
+        return [r[1] for r in results[:limit]]
 
     def get_paper_info(self, paper_id: int):
+        """Lấy thông tin chi tiết của bài báo hạt nhân từ SQLite"""
         conn = sqlite3.connect(self.db_path)
         query = f"SELECT * FROM papers WHERE paper_id = {paper_id} LIMIT 1;"
         df = pd.read_sql_query(query, conn)
