@@ -11,6 +11,11 @@
   <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python" />
 </p>
 
+> 📦 **Dataset Stanford OGBN-MAG (694,450 bài báo & 7.1 triệu liên kết trích dẫn):**  
+> • 🌐 **Trang chủ Dataset chính thức:** [https://ogb.stanford.edu/docs/nodeprop/#ogbn-mag](https://ogb.stanford.edu/docs/nodeprop/#ogbn-mag)  
+> • 📥 **Link tải trực tiếp file nén SNAP:** [http://snap.stanford.edu/ogb/data/nodeproppred/mag.zip](http://snap.stanford.edu/ogb/data/nodeproppred/mag.zip)  
+> • 🗂️ **Dữ liệu tiền xử lý sẵn trong repo:** [`data/processed/citation_ml_dataset.parquet`](data/processed/citation_ml_dataset.parquet) & [`data/processed/citation_lens.db`](data/processed/citation_lens.db)
+
 ---
 
 <p align="center">
@@ -37,7 +42,7 @@
 
 ## 📌 1. Giới thiệu Đề tài & Nghịch lý Thiên vị Độ phổ biến
 
-Trong kỷ nguyên bùng nổ thông tin học thuật (Big Scholarly Data), hàng triệu công trình nghiên cứu được xuất bản mỗi năm. Tuy nhiên, các công cụ tìm kiếm và gợi ý học thuật phổ biến hiện nay (như Google Scholar, Scopus) vận hành chủ yếu dựa trên số lượng trích dẫn tích lũy hoặc PageRank tĩnh, dẫn tới **Nghịch lý Thiên vị độ phổ biến (Popularity Bias / Hiệu ứng Matthew: "kẻ giàu càng giàu thêm")**:
+Trong kỷ nguyên bùng nổ thông tin học thuật (Big Scholarly Data), hàng triệu công trình nghiên cứu được xuất bản mỗi năm. Tuy nhiên, các công cụ tìm kiếm và gợi ý học thuật phổ biến hiện nay (như Google Scholar, Scopus) vận hành chủ yếu dựa trên số lượng trích dẫn tích lũy hoặc PageRank tĩnh, dẫn tới **Nghịch lý Thiên vị độ phổ biến (Popularity Bias / Hiệu ứng dồn tích trích dẫn cũ)**:
 * **Thiên vị bài cũ:** Các bài báo kinh điển xuất bản từ lâu liên tục được đẩy lên đầu trang tìm kiếm dù tốc độ phát triển chuyên môn đã chững lại.
 * **Bỏ quên bài đột phá mới:** Các công bố khoa học đột phá mới xuất bản (*Emerging Influential Papers*) dù mang ý tưởng tiên phong nhưng do thời gian tồn tại ngắn nên chưa tích lũy đủ trích dẫn, dẫn đến bị chìm lấp trong kho dữ liệu khổng lồ.
 
@@ -71,24 +76,42 @@ Hệ thống được thiết kế theo mô hình lọc 2 tầng kết hợp 3 c
 
 ## 🗄️ 3. Dữ liệu Lớn & Chuẩn mực Chống Rò rỉ Thời gian (Zero-Leakage)
 
-### 3.1. Nguồn Dữ liệu & Liên kết Tải về (Dataset Links)
+### 3.1. Nguồn Dữ liệu & Hướng dẫn Tải về (Dataset Links & Download Guide)
+
 * **Tên bộ dữ liệu:** **Stanford OGBN-MAG (Open Graph Benchmark - Microsoft Academic Graph)**
 * 🌐 **Trang chủ Dataset chính thức:** [https://ogb.stanford.edu/docs/nodeprop/#ogbn-mag](https://ogb.stanford.edu/docs/nodeprop/#ogbn-mag)
-* 📦 **Link tải trực tiếp từ Stanford SNAP:** [http://snap.stanford.edu/ogb/data/nodeproppred/mag.zip](http://snap.stanford.edu/ogb/data/nodeproppred/mag.zip)
+* 📦 **Link tải trực tiếp file nén từ Stanford SNAP (~1.7 GB):** [http://snap.stanford.edu/ogb/data/nodeproppred/mag.zip](http://snap.stanford.edu/ogb/data/nodeproppred/mag.zip)
 * 📄 **Bài báo công bố chuẩn quốc tế (NeurIPS 2020):** [Hu et al., "Open Graph Benchmark: Datasets for Machine Learning on Graphs"](https://arxiv.org/abs/2005.00687)
-* 💻 **Cách tải tự động bằng Python qua thư viện chính thức `ogb`:**
+
+#### 📥 Các phương thức tải dữ liệu:
+
+* **Cách 1: Tải trực tiếp bằng Terminal / Dòng lệnh (`curl` hoặc `wget`):**
+  ```bash
+  # Tạo thư mục lưu trữ và tải file nén từ máy chủ Stanford SNAP
+  mkdir -p data/mag && cd data/mag
+  curl -O http://snap.stanford.edu/ogb/data/nodeproppred/mag.zip
+  # hoặc dùng wget:
+  # wget http://snap.stanford.edu/ogb/data/nodeproppred/mag.zip
+
+  # Giải nén bộ dữ liệu
+  unzip mag.zip
+  cd ../..
+  ```
+
+* **Cách 2: Tải tự động bằng Python qua thư viện chuẩn `ogb` của Stanford:**
   ```python
-  # Cài đặt thư viện OGB của Đại học Stanford
+  # Cài đặt thư viện OGB chính thức
   pip install ogb
 
-  # Tải và khởi tạo bộ dữ liệu OGBN-MAG
+  # Tải và tự động giải nén bộ dữ liệu ogbn-mag vào thư mục data/
   from ogb.nodeproppred import NodePropPredDataset
   dataset = NodePropPredDataset(name="ogbn-mag", root="data")
   ```
 
-* 🗂️ **Vị trí lưu trữ dữ liệu trong Project:**
-  * `data/processed/citation_ml_dataset.parquet`: Bộ dữ liệu Big Data phân tán **694,450 bài báo** và **7.1 triệu liên kết trích dẫn** đã được trích xuất đặc trưng và phân vùng theo thời gian.
-  * `data/processed/citation_lens.db`: Cơ sở dữ liệu SQLite serving thời gian thực (chứa bảng `papers`, `mag_mapping`, `paper_titles`).
+* **Cách 3: Sử dụng Dữ liệu đã Tiền xử lý sẵn trong Repository (Khuyên dùng khi chạy Demo):**
+  Dự án đã xử lý sẵn và đóng gói dữ liệu tối ưu trong thư mục [`data/processed/`](data/processed/) để người dùng có thể khởi chạy FastAPI Web App ngay lập tức mà không cần xử lý lại từ đầu:
+  * 🗄️ [`data/processed/citation_lens.db`](data/processed/citation_lens.db): Cơ sở dữ liệu SQLite tối ưu phục vụ tìm kiếm bài báo và gợi ý thời gian thực (~0.25s).
+  * 📊 [`data/processed/citation_ml_dataset.parquet`](data/processed/citation_ml_dataset.parquet): Tập dữ liệu Parquet phân tán **694,450 bài báo** và **7.1 triệu liên kết trích dẫn** đã trích xuất đặc trưng và phân vùng thời gian Train - Valid - Test.
 
 ### 3.2. Nguyên tắc Phân chia Thời gian Nghiêm ngặt (Strict Temporal Split)
 * `Train`: Các bài báo xuất bản $\le 2016$ (**559,373** bài báo).
